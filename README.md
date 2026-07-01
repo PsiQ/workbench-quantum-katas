@@ -49,12 +49,15 @@ If you can't come up with a solution on your own, you can look up the explained 
 * [Deutsch algorithm](./DeutschAlgorithm/DeutschAlgorithm.ipynb). Learn Deutsch algorithm - the simplest algorithm relying on quantum oracles.
 * [Deutsch–Jozsa algorithm](./DeutschJozsaAlgorithm/DeutschJozsaAlgorithm.ipynb). Learn about Bernstein–Vazirani and Deutsch–Jozsa algorithms.
 
-
 ### Grover's search algorithm
 
 * [Grover's search algorithm](./GroversSearch/GroversSearch.ipynb). Learn about Grover's search algorithm and the practical considerations of applying it to solving problems.
-* [Solving SAT problems using Grover's algorithm](./SolvingSATWithGrover/SolvingSATWithGrover.ipynb). Explore Grover's search algorithm, using SAT problems as an example. Learn to implement quantum oracles based on the problem description instead of a hard-coded answer. 
+* [Solving SAT problems using Grover's algorithm](./SolvingSATWithGrover/SolvingSATWithGrover.ipynb). Explore Grover's search algorithm, using SAT problems as an example. Learn to implement quantum oracles based on the problem description instead of a hard-coded answer.
 * [Solving graph coloring problems using Grover's algorithm](./GraphColoringGrover/GraphColoringGrover.ipynb). Continue the exploration of Grover's search algorithm, using graph coloring problems as an example.
+
+### Quantum arithmetic
+
+* [Quantum arithmetic data types](./ArithmeticDataTypes/ArithmeticDataTypes.ipynb). Learn to represent signed and unsigned integers as quantum data types and to implement naive arithmetic operations on them.
 
 ### Building up to Shor's algorithm
 
