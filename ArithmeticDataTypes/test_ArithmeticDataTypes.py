@@ -57,11 +57,6 @@ def get_instructions(n_bits_a: int, n_bits_b: int, n_qubits: int, qtype: type[Qu
     else:
         quantum_op(a, b)
 
-    # Check that there are no leftover auxiliary qubits - only a and b
-    # num_qubits = qpu._get_qubit_heap().allocated_mask.bit_count()
-    # if num_qubits != n_inputs_a + n_inputs_b:
-    #     raise Exception("Your solution should release all auxiliary qubits it allocates")
-
     instructions = qpu.get_instructions(format='cpp')
     # The first two or three instructions
     # are going to be reset and qubit allocations - skip them
@@ -69,6 +64,8 @@ def get_instructions(n_bits_a: int, n_bits_b: int, n_qubits: int, qtype: type[Qu
 
 
 def run_test_reversible(n_bits_a: int, n_bits_b: int, qtype: type[Qubits], quantum_op: Callable, f: Callable):
+    '''Runs test of a reversible computation, assuming one or two input registers of variable type and possibly different sizes
+       and no auxiliary qubits allocated.'''
     # For naive operations, we don't need to allocate any auxiliary qubits
     n_qubits = n_bits_a + n_bits_b
     instructions = get_instructions(n_bits_a, n_bits_b, n_qubits, qtype, quantum_op)
@@ -105,7 +102,7 @@ def run_test_reversible(n_bits_a: int, n_bits_b: int, qtype: type[Qubits], quant
         if n_bits_b > 0:
             res_b = b.read()
 
-        # Show bit string input in little-endian (LSB first) to match qubit state
+        # Show inputs as integers
         prefix = f"Error for a={input_a}" + ("" if n_bits_b == 0 else f", b={input_b}") + ": "
         if res_a != res_expected:
             raise Exception(f"{prefix}expected result a={res_expected}, got {res_a}")

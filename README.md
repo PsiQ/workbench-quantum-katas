@@ -58,6 +58,7 @@ If you can't come up with a solution on your own, you can look up the explained 
 ### Quantum arithmetic
 
 * [Quantum arithmetic data types](./ArithmeticDataTypes/ArithmeticDataTypes.ipynb). Learn to represent signed and unsigned integers as quantum data types and to implement naive arithmetic operations on them.
+* [Quantum Adders](./Adders/Adders.ipynb). Learn to implement different quantum adders.
 
 ### Building up to Shor's algorithm
 
