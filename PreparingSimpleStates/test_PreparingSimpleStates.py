@@ -10,7 +10,7 @@ try:
     # Ignore warnings about invalid syntax when importing LaTeX cells
     with catch_warnings(action="ignore", category=SyntaxWarning):
         with Notebook():
-            import Workbook_PreparingStates as ref
+            import Workbook_PreparingSimpleStates as ref
     ref_available = True
 except ImportError:
     ref_available = False

@@ -39,7 +39,7 @@ If you can't come up with a solution on your own, you can look up the explained 
 * [Multi-qubit systems](./MultiQubitSystems/MultiQubitSystems.ipynb). Learn to represent quantum states of multi-qubit systems.
 * [Multi-qubit gates](./MultiQubitGates/MultiQubitGates.ipynb). Learn about the most common multi-qubit gates, including controlled variants of single-qubit gates.
 * [Multi-qubit measurements](./MultiQubitMeasurements/MultiQubitMeasurements.ipynb). Learn to use measurements for multi-qubit systems.
-* [Preparing quantum states](./PreparingStates/PreparingStates.ipynb). Learn to prepare simple superposition states.
+* [Preparing simple quantum states](./PreparingSimpleStates/PreparingSimpleStates.ipynb). Learn to prepare simple superposition states.
 * [Distinguishing orthogonal quantum states](./DistinguishingStates/DistinguishingStates.ipynb). Learn to distinguish orthogonal quantum states using measurements.
 
 ### Quantum oracles and simple oracle algorithms
@@ -58,7 +58,7 @@ If you can't come up with a solution on your own, you can look up the explained 
 ### Quantum arithmetic
 
 * [Quantum arithmetic data types](./ArithmeticDataTypes/ArithmeticDataTypes.ipynb). Learn to represent signed and unsigned integers as quantum data types and to implement naive arithmetic operations on them.
-* [Quantum Adders](./Adders/Adders.ipynb). Learn to implement different quantum adders.
+* [Quantum adders](./Adders/Adders.ipynb). Learn to implement different quantum adders.
 
 ### Building up to Shor's algorithm
 
