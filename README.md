@@ -72,6 +72,7 @@ If you can't come up with a solution on your own, you can look up the explained 
 
 ### Miscellaneous
 
+* [Preparing arbitrary quantum states](./ArbitraryStatePreparation/ArbitraryStatePreparation.ipynb). Learn to prepare arbitrary quantum states (states without simple internal structure).
 * [Distinguishing non-orthogonal quantum states](./DistinguishingNonOrthogonalStates/DistinguishingNonOrthogonalStates.ipynb). Learn about different approaches to the problem of distinguishing non-orthogonal states.
 * [Quantum Approximate Optimization Algorithm](./MaxCutQAOA/MaxCutQAOA.ipynb). Learn to solve MaxCut problem using quantum approximate optimization algorithm (QAOA).
 
