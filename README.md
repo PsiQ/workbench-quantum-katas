@@ -6,15 +6,15 @@ The Quantum Katas are a collection of self-paced tutorials and programming probl
 
 To use the Quantum Katas, you need to install [PsiQuantum Quantum Development Kit](https://construct.psiquantum.com/docs/), the Python toolkit for developing fault-tolerant quantum algorithms. You can find the complete installation guide and requirements in [PsiQDK documentation](https://construct.psiquantum.com/docs/psiqdk/installation.html).
 
-You'll also need to install `scipy` for several of the advanced katas.
+You'll also need to install `pytest` and `scipy` for several of the advanced katas.
 
 ```bash
-pip install psiqdk scipy
+pip install psiqdk pytest scipy
 ```
 
 ## User workflow
 
-Each kata is a Jupyter Notebook that includes the theory on one topic, interspersed with demos and programming problems designed to help you practice and internalize this topic. 
+Each kata is a Jupyter Notebook that includes the theory on one topic, interspersed with demos and programming problems designed to help you practice and internalize this topic.
 
 You can run demos to see the results of their execution and modify them to check your understanding of how the outputs will change. Demos don't affect the verification of programming problems solutions, though you can use functions defined in demos as part of your solution if you want to.
 
@@ -82,7 +82,7 @@ To add a new problem to the kata, for example, a problem called "Oracle 123" in 
 
 1. Add the problem description and function template to the main notebook (`MarkingOracles.ipynb`).
    The function name should match the problem title and follow the naming patterns and signature style of previous problems in the kata (`oracle_123`).
-2. Add the solution description and code cell with the "reference solution" to the workbook (`Workbook_MarkingOracles.ipynb`). 
+2. Add the solution description and code cell with the "reference solution" to the workbook (`Workbook_MarkingOracles.ipynb`).
    The reference solution should have the same name as the function in the main notebook (`oracle_123`).
    Notice that the workbooks don't use the `@problem` decorator; to run the test on the reference solution, you need to copy it to the main notebook or use pytest.
 3. Add the test to the Python file with the testing harness (`test_MarkingOracles.py`).
@@ -91,6 +91,8 @@ To add a new problem to the kata, for example, a problem called "Oracle 123" in 
 4. Verify that the empty function template fails the test and the reference solution passes it.
    You can do that by copying the reference solution from the workbook to the main notebook by hand and executing the code cell.
    Alternatively, you can test all reference solutions at once using pytest. To do this, you need to install the package `importnb` (`pip install importnb`) and run pytest in the kata folder. If this package is not installed, pytest will skip testing, since this package is used to import the reference solutions from the workbook.
+
+   > Note that if you're using importnb to test all reference solutions, you need to install pytest 8.0.2 or earlier; later pytest versions are not compatible with the importnb plugin.
 
 ## Getting help and contributing
 
