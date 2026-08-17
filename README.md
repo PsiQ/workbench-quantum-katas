@@ -66,13 +66,17 @@ If you can't come up with a solution on your own, you can look up the explained 
 * [Quantum phase estimation](./QPE/QPE.ipynb). Learn about quantum phase estimation problem and algorithms to solve it.
 * [Shor's integer factoring algorithm](./ShorsFactoring/ShorsFactoring.ipynb). Learn about Shor's algorithm for factoring integers.
 
+### Quantum simulation toolbox
+
+* [Preparing arbitrary quantum states](./ArbitraryStatePreparation/ArbitraryStatePreparation.ipynb). Learn to prepare arbitrary quantum states (states without simple internal structure).
+* [Linear Combination of Unitaries, Block Encoding, and Qubitization](./LCUBlockEncoding/LCUBlockEncoding.ipynb). Learn about encoding non-unitary operators as a block of a larger unitary operator and using this technique with quantum phase estimation.
+
 ### Quantum chemistry
 
 * [Finding the ground state energy of a molecule](./GroundStateEnergy/GroundStateEnergyTheory.ipynb). Learn about the problem of finding ground state energy and the workflow of converting it into a task that can be solved using quantum computing.
 
 ### Miscellaneous
 
-* [Preparing arbitrary quantum states](./ArbitraryStatePreparation/ArbitraryStatePreparation.ipynb). Learn to prepare arbitrary quantum states (states without simple internal structure).
 * [Distinguishing non-orthogonal quantum states](./DistinguishingNonOrthogonalStates/DistinguishingNonOrthogonalStates.ipynb). Learn about different approaches to the problem of distinguishing non-orthogonal states.
 * [Quantum Approximate Optimization Algorithm](./MaxCutQAOA/MaxCutQAOA.ipynb). Learn to solve MaxCut problem using quantum approximate optimization algorithm (QAOA).
 
