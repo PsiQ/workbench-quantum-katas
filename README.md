@@ -68,8 +68,8 @@ If you can't come up with a solution on your own, you can look up the explained 
 
 ### Quantum simulation toolbox
 
-* [Preparing arbitrary quantum states](./ArbitraryStatePreparation/ArbitraryStatePreparation.ipynb). Learn to prepare arbitrary quantum states (states without simple internal structure).
-* [Linear Combination of Unitaries, Block Encoding, and Qubitization](./LCUBlockEncoding/LCUBlockEncoding.ipynb). Learn about encoding non-unitary operators as a block of a larger unitary operator and using this technique with quantum phase estimation.
+* [Preparing arbitrary quantum states](./ArbitraryStatePreparation/ArbitraryStatePreparation.ipynb). Learn to prepare arbitrary quantum states (dense states without simple internal structure).
+* [Linear combination of unitaries and block encoding](./LCUBlockEncoding/LCUBlockEncoding.ipynb). Learn about encoding non-unitary operators as a sub-block of a larger unitary operator.
 
 ### Quantum chemistry
 
