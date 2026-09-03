@@ -1,0 +1,139 @@
+{
+  "record_type": "psiquantum.circuit",
+  "title": "Untitled Circuit",
+  "copyright": "Copyright © 2026. All rights reserved.",
+  "record_format": 3,
+  "modified": "2026-09-03T20:48:38.809Z",
+  "style": {
+    "title_el": {
+      "visible": false
+    },
+    "show_rail_allocation": false
+  },
+  "root": {
+    "id": "__ROOT__",
+    "type": "__ROOT__",
+    "input_registers": "*",
+    "children": [
+      {
+        "id": "r1",
+        "type": "register",
+        "label": "register",
+        "size": 6,
+        "style": {
+          "enumerate": "none",
+          "decoration": "curly-end"
+        }
+      },
+      {
+        "type": "register",
+        "id": "r2",
+        "label": "auxiliary",
+        "style": {
+          "enumerate": "mask",
+          "rail_state": "free"
+        }
+      },
+      {
+        "id": "gate1",
+        "type": "gate",
+        "gate_type": "lelbow",
+        "input_registers": "r2",
+        "controlled_by": "r1[1,2]"
+      },
+      {
+        "input_registers": "r1[0],r2",
+        "type": "group",
+        "id": "group1",
+        "tags": [
+          "green",
+          "border-green"
+        ],
+        "children": [
+          {
+            "input_registers": "r1[0]",
+            "gate_type": "rz",
+            "type": "gate",
+            "id": "gate7",
+            "controlled_by": "r2",
+            "parameters": {
+              "angle": "123\\degree"
+            }
+          }
+        ]
+      },
+      {
+        "id": "gate6",
+        "type": "gate",
+        "gate_type": "relbow",
+        "controlled_by": "r1[1,2]",
+        "input_registers": "r2"
+      },
+      {
+        "input_registers": "*",
+        "tags": [
+          "equals"
+        ],
+        "type": "separator",
+        "id": "separator2"
+      },
+      {
+        "id": "gate8",
+        "type": "gate",
+        "gate_type": "lelbow",
+        "input_registers": "r2",
+        "controlled_by": "r1[1,2]"
+      },
+      {
+        "input_registers": "r1[0],r2",
+        "type": "group",
+        "id": "group2",
+        "tags": [
+          "green",
+          "border-green"
+        ],
+        "children": [
+          {
+            "input_registers": "r1[0]",
+            "gate_type": "cnot",
+            "type": "gate",
+            "id": "gate12",
+            "controlled_by": "r2"
+          },
+          {
+            "input_registers": "r1[0]",
+            "gate_type": "rz",
+            "type": "gate",
+            "id": "gate9",
+            "parameters": {
+              "angle": "-61.5\\degree"
+            }
+          },
+          {
+            "input_registers": "r1[0]",
+            "gate_type": "cnot",
+            "type": "gate",
+            "id": "gate11",
+            "controlled_by": "r2"
+          },
+          {
+            "input_registers": "r1[0]",
+            "gate_type": "rz",
+            "type": "gate",
+            "id": "gate13",
+            "parameters": {
+              "angle": "61.5\\degree"
+            }
+          }
+        ]
+      },
+      {
+        "id": "gate10",
+        "type": "gate",
+        "gate_type": "relbow",
+        "controlled_by": "r1[1,2]",
+        "input_registers": "r2"
+      }
+    ]
+  }
+}

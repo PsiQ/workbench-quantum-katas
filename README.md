@@ -70,6 +70,10 @@ If you can't come up with a solution on your own, you can look up the explained 
 
 * [Finding the ground state energy of a molecule](./GroundStateEnergy/GroundStateEnergyTheory.ipynb). Learn about the problem of finding ground state energy and the workflow of converting it into a task that can be solved using quantum computing.
 
+### Quantum resource estimation
+
+* [Introduction to quantum resource estimation](./IntroToQRE/IntroToQRE.ipynb). Learn about the basics of counting the resources required to run an algorithm on a quantum computer and the tools Workbench provides for this.
+
 ### Miscellaneous
 
 * [Preparing arbitrary quantum states](./ArbitraryStatePreparation/ArbitraryStatePreparation.ipynb). Learn to prepare arbitrary quantum states (states without simple internal structure).
