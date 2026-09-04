@@ -47,11 +47,10 @@ def problem(arg):
 def check_state_vector(
     fun: Callable,                                # Callable that is being tested
     n_qubits: int,                                # Number of qubits in the main register
-    expected_vector: Sequence[float]             # State vector it should prepare
+    expected_vector: Sequence[float]              # State vector it should prepare
 ) -> None:
     # Construct the QPU and register
     qpu = QPU(num_qubits=n_qubits)
-    qpu.enable_qubit_allocation_debugging()
     reg = Qubits(n_qubits, 'reg', qpu)
 
     fun(reg)
