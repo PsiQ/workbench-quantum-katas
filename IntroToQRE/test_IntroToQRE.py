@@ -1,4 +1,4 @@
-"""Interactive grading for the ``FiltersAndResourceEstimation`` notebook.
+"""Interactive grading for the ``IntroToQRE`` notebook.
 
 These exercises are graded from the notebook via the ``problem`` decorator (the
 same pattern used elsewhere in this repo), not by pytest. Decorate your answer
@@ -63,8 +63,8 @@ def test_count_raw_gates(fun):
         raise ValueError(f"Incorrect number of T gates: expected 1, got {actual_ts}")
 
     actual_rotations = actual.get("rotations")
-    if actual_rotations != 3 and actual_rotations != 4:
-        raise ValueError(f"Incorrect number of rotations: expected 3 or 4, got {actual_rotations}")
+    if actual_rotations != 4:
+        raise ValueError(f"Incorrect number of rotations: expected 4, got {actual_rotations}")
 
 
 
