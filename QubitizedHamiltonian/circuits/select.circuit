@@ -1,0 +1,196 @@
+{
+  "record_type": "psiquantum.circuit",
+  "title": "Untitled Circuit",
+  "copyright": "Copyright © 2026. All rights reserved.",
+  "record_format": 3,
+  "modified": "2026-08-09T19:48:03.435Z",
+  "style": {
+    "title_el": {
+      "visible": false
+    }
+  },
+  "root": {
+    "id": "__ROOT__",
+    "type": "__ROOT__",
+    "input_registers": "*",
+    "children": [
+      {
+        "id": "r1",
+        "type": "register",
+        "label": "\\text{coefficients}"
+      },
+      {
+        "type": "register",
+        "id": "r2",
+        "label": "\\text{add/subtract}"
+      },
+      {
+        "type": "register",
+        "id": "r3",
+        "label": "\\text{addends}"
+      },
+      {
+        "type": "register",
+        "id": "r4",
+        "label": "\\text{system}"
+      },
+      {
+        "name": "routine",
+        "label": "\\text{SELECT}",
+        "input_registers": "r1,r2,r3,r4",
+        "type": "routine",
+        "id": "routine9",
+        "expanded": true,
+        "tags": [
+          "green"
+        ],
+        "children": [
+          {
+            "input_registers": "r1,r3",
+            "style": {
+              "connection_style": "quantum"
+            },
+            "type": "column",
+            "id": "column1",
+            "children": [
+              {
+                "name": "routine",
+                "label": "j",
+                "input_registers": "r1",
+                "type": "routine",
+                "id": "routine1",
+                "style": {
+                  "box_el": {
+                    "shape": "hexagon"
+                  }
+                },
+                "tags": [
+                  "red"
+                ]
+              },
+              {
+                "name": "routine",
+                "label": "j+1",
+                "input_registers": "r3",
+                "type": "routine",
+                "id": "routine2",
+                "style": {
+                  "rail_state": "in_use"
+                },
+                "tags": [
+                  "red"
+                ]
+              }
+            ]
+          },
+          {
+            "input_registers": "r2",
+            "gate_type": "cnot",
+            "type": "gate",
+            "id": "gate1"
+          },
+          {
+            "input_registers": "r2,r3,r4",
+            "style": {
+              "connection_style": "quantum"
+            },
+            "type": "column",
+            "id": "column2",
+            "children": [
+              {
+                "name": "routine",
+                "label": "\\textbf{+}",
+                "input_registers": "r3",
+                "type": "routine",
+                "id": "routine3",
+                "controlled_by": "~r2",
+                "tags": [
+                  "blue"
+                ]
+              },
+              {
+                "name": "routine",
+                "label": "=",
+                "input_registers": "r4",
+                "type": "routine",
+                "id": "routine4",
+                "tags": [
+                  "blue"
+                ]
+              }
+            ]
+          },
+          {
+            "input_registers": "r2,r3,r4",
+            "style": {
+              "connection_style": "quantum"
+            },
+            "type": "column",
+            "id": "column3",
+            "children": [
+              {
+                "name": "routine",
+                "label": "-",
+                "input_registers": "r3",
+                "type": "routine",
+                "id": "routine5",
+                "controlled_by": "r2",
+                "tags": [
+                  "blue"
+                ]
+              },
+              {
+                "name": "routine",
+                "label": "=",
+                "input_registers": "r4",
+                "type": "routine",
+                "id": "routine6",
+                "tags": [
+                  "blue"
+                ]
+              }
+            ]
+          },
+          {
+            "input_registers": "r1,r3",
+            "style": {
+              "connection_style": "quantum"
+            },
+            "type": "column",
+            "id": "column4",
+            "children": [
+              {
+                "name": "routine",
+                "label": "j",
+                "input_registers": "r1",
+                "type": "routine",
+                "id": "routine7",
+                "style": {
+                  "box_el": {
+                    "shape": "hexagon"
+                  }
+                },
+                "tags": [
+                  "red"
+                ]
+              },
+              {
+                "name": "routine",
+                "label": "(j+1)^\\dagger",
+                "input_registers": "r3",
+                "type": "routine",
+                "id": "routine8",
+                "style": {
+                  "rail_state": "free"
+                },
+                "tags": [
+                  "red"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

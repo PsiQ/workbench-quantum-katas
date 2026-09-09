@@ -1,0 +1,59 @@
+{
+  "record_type": "psiquantum.circuit",
+  "title": "Untitled Circuit",
+  "copyright": "Copyright © 2026. All rights reserved.",
+  "record_format": 3,
+  "modified": "2026-09-07T14:40:30.012Z",
+  "style": {
+    "title_el": {
+      "visible": false
+    }
+  },
+  "root": {
+    "id": "__ROOT__",
+    "type": "__ROOT__",
+    "input_registers": "*",
+    "children": [
+      {
+        "id": "r1",
+        "type": "register",
+        "label": "\\text{auxiliary}"
+      },
+      {
+        "type": "register",
+        "id": "r2",
+        "label": "\\text{system}"
+      },
+      {
+        "name": "routine",
+        "label": "\\text{Prepare}",
+        "input_registers": "r1",
+        "type": "routine",
+        "id": "routine1",
+        "tags": [
+          "orange"
+        ]
+      },
+      {
+        "name": "routine",
+        "label": "\\text{Select}",
+        "input_registers": "r2,r1",
+        "type": "routine",
+        "id": "routine2",
+        "tags": [
+          "green"
+        ]
+      },
+      {
+        "name": "routine",
+        "label": "\\text{Prepare}^\\dagger",
+        "input_registers": "r1",
+        "type": "routine",
+        "id": "routine3",
+        "tags": [
+          "orange"
+        ]
+      }
+    ]
+  }
+}
