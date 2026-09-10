@@ -175,3 +175,22 @@ def test_adder(qbk_class):
             global log_message
             log_message = f"Testing {n=}, {m=}"
             check_adder(n, m, qbk_class)
+
+
+####################################################################################################
+
+import matplotlib.pyplot as plt
+
+def plot_landscape(landscape, xrange, yrange, parameter, xlabel, ylabel):
+    fig, ax = plt.subplots()
+    im = ax.imshow(landscape, origin="lower", aspect="auto", cmap="viridis")
+    ax.set_xticks(range(len(xrange)))
+    ax.set_xticklabels(xrange)
+    ax.set_yticks(range(len(yrange)))
+    ax.set_yticklabels(yrange)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(f"{parameter.capitalize()} landscape")
+    fig.colorbar(im, ax=ax, label=parameter)
+
+    plt.show()
