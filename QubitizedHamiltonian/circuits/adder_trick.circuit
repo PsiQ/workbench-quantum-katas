@@ -1,0 +1,149 @@
+{
+  "record_type": "psiquantum.circuit",
+  "title": "Untitled Circuit",
+  "copyright": "Copyright © 2026. All rights reserved.",
+  "record_format": 3,
+  "modified": "2026-07-27T09:54:49.805Z",
+  "style": {
+    "title_el": {
+      "visible": false
+    }
+  },
+  "root": {
+    "id": "__ROOT__",
+    "type": "__ROOT__",
+    "input_registers": "*",
+    "children": [
+      {
+        "id": "r1",
+        "type": "register",
+        "label": "\\text{add/subtract}"
+      },
+      {
+        "type": "register",
+        "id": "r2",
+        "label": "\\text{addends}"
+      },
+      {
+        "type": "register",
+        "id": "r3",
+        "label": "\\text{system}"
+      },
+      {
+        "input_registers": "r2,r3",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column1",
+        "children": [
+          {
+            "name": "routine",
+            "label": "+",
+            "input_registers": "r2",
+            "type": "routine",
+            "id": "routine2",
+            "controlled_by": "~r1",
+            "tags": [
+              "blue"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "=",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine1",
+            "tags": [
+              "blue"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r2,r3",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column2",
+        "children": [
+          {
+            "name": "routine",
+            "label": "-",
+            "input_registers": "r2",
+            "type": "routine",
+            "id": "routine3",
+            "controlled_by": "r1",
+            "tags": [
+              "blue"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "=",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine4",
+            "tags": [
+              "blue"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r1,r2,r3",
+        "tags": [
+          "equals"
+        ],
+        "type": "separator",
+        "id": "separator1"
+      },
+      {
+        "input_registers": "r3",
+        "gate_type": "cnot",
+        "type": "gate",
+        "id": "gate2",
+        "controlled_by": "r1"
+      },
+      {
+        "input_registers": "r2,r3",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column3",
+        "children": [
+          {
+            "name": "routine",
+            "label": "+",
+            "input_registers": "r2",
+            "type": "routine",
+            "id": "routine5",
+            "controlled_by": "",
+            "tags": [
+              "blue"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "=",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine6",
+            "tags": [
+              "blue"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r3",
+        "gate_type": "cnot",
+        "type": "gate",
+        "id": "gate3",
+        "controlled_by": "r1"
+      }
+    ]
+  }
+}
