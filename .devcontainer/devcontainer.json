@@ -17,8 +17,8 @@
 	"customizations": {
 		"vscode": {
 		"settings": {
+			"jupyter.notebokControllerDefault": "ms-python.python",
 			"python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
-			"jupyter.notebookFileRoot": "${workspaceFolder}"
 		},
 		"extensions": [
 			"ms-python.python",       // Core Python support
