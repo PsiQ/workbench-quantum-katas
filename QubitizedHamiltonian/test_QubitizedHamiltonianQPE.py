@@ -1,15 +1,12 @@
 from itertools import product
 from IPython.display import HTML
-from math import sqrt
 import numpy as np
-from random import seed, uniform
-from typing import Callable
+from psiqdk.algorithms import PrepareNaive, SelectNaive, NaiveAdd, QPE, QFT
 from psiqdk.workbench import QPU, Qubits, Qubrick
 from psiqdk.workbench.filter_presets import BIT_DEFAULT
 from psiqdk.workbench.qre import resource_estimator
-from pytest import approx, mark
+from pytest import mark
 from warnings import catch_warnings
-from functools import partial
 
 try:
     from importnb import Notebook
@@ -177,6 +174,168 @@ def test_adder(qbk_class):
             check_adder(n, m, qbk_class)
 
 
+####################################################################################################
+
+class GeneralizedHamiltonianEncoding(Qubrick):
+    """Qubitization walk operator (block encoding + reflection) for a hopping
+    Hamiltonian specified by aligned (coefficient, offset) term pairs.
+
+    The offsets and the addends-register width are passed in, so the
+    same class works for any number of terms / any chain size.
+    """
+
+    def __init__(self, prepare, qrom, adder, offsets, addends_size, **kwargs):
+        self.prepare = prepare
+        self.qrom = qrom
+        self.adder = adder
+        self.offsets = offsets
+        self.addends_size = addends_size
+        super().__init__(**kwargs)
+
+    def _compute(self, state_reg, coefficient_reg, add_subtract_reg, ctrl=0):
+        # PREPARE
+        self.prepare.compute(coefficient_reg, cond=ctrl)
+        add_subtract_reg.had(cond=ctrl)
+
+        addends = self.alloc_temp_qreg(self.addends_size, "addends")
+        # QROM
+        with self.qrom.computed(coefficient_reg, addends, self.offsets, ctrl=ctrl):
+            add_subtract_reg.x(cond=ctrl)     # Makes SELECT self-inverse
+            # Apply adder on the |0⟩ branch and subtractor on the |1⟩ branch
+            self.adder.compute(state_reg, addends, ctrl=(add_subtract_reg == 0) | ctrl)
+            self.adder.compute(state_reg, addends, ctrl=(add_subtract_reg == 1) | ctrl, dagger=True)
+        addends.release()
+
+        # UnPREPARE
+        add_subtract_reg.had(cond=ctrl)
+        self.prepare.uncompute()
+
+        # reflection for qubitization
+        (~coefficient_reg | ~add_subtract_reg).reflect(ctrl=ctrl)
+        if ctrl:
+            ctrl.reflect()
+
+
+def build_qpu(
+    state_size: int,
+    coefficients: list[float],
+    offsets: list[int],
+    bits_of_precision: int=5,
+    prepare: Qubrick | None=None,
+    qrom: Qubrick | None=None,
+    adder: Qubrick | None=None,
+    buffer: int=10,
+):
+    """Build a QPU holding a full QPE with the qubitized Hamiltonian.
+
+    Args:
+        state_size: The number of qubits in the system register (the chain has 2**state_size sites).
+        coefficients: Term weights $w_j$; the default PREPARE loads square roots of these.
+        offsets: Integer offsets loaded by the QROM and added to / subtracted from the
+            state register. One offset per coefficient.
+        bits_of_precision: The size of the QPE phase register.
+        prepare: The state preparation Qubrick. Defaults to PrepareNaive.
+        qrom: The data lookup Qubrick. Defaults to SelectNaive.
+        adder: The adder Qubrick. Defaults to NaiveAdd.
+        buffer: The number of spare qubits for decompositions that rely on auxiliary qubits.
+    """
+    assert len(coefficients) == len(offsets), "The numbers of coefficients and offsets should be the same"
+    assert all(int(d) == d and d >= 0 for d in offsets), "Each element of offsets must be a non-negative integer"
+    assert max(offsets) < 2 ** state_size, "Each offset should fit in the state register"
+
+    if prepare is None:
+        prepare = PrepareNaive(coefficients)
+    if qrom is None:
+        qrom = SelectNaive()
+    if adder is None:
+        adder = NaiveAdd()
+
+    coefficient_size = (len(coefficients) - 1).bit_length()   # Number of QROM address bits
+    addends_size = (max(offsets) - 1).bit_length() + 1        # Number of bits to hold the largest offset
+    ctrl_size = 1
+
+    num_qubits = state_size + coefficient_size + ctrl_size + bits_of_precision + addends_size + buffer
+
+    qpu = QPU(num_qubits=num_qubits, filters=[">>buffer>>"])
+    state_reg = Qubits(state_size, "state", qpu)
+    coefficients_reg = Qubits(coefficient_size, "coefficients_reg", qpu)
+    add_subtract_reg = Qubits(1, "add_subtract_reg", qpu)
+    phases_reg = Qubits(bits_of_precision, "phases_reg", qpu)
+
+    qft = QFT()
+    qft.compute(state_reg)
+
+    encoding = GeneralizedHamiltonianEncoding(prepare, qrom, adder, offsets, addends_size)
+
+    qpe = QPE(unitary=encoding, bits_of_precision=bits_of_precision)
+    qpe.compute(
+        state_reg,
+        phases_reg,
+        coefficient_reg=coefficients_reg,
+        add_subtract_reg=add_subtract_reg,
+    )
+    return qpu
+
+
+####################################################################################################
+
+@mark.parametrize("get_adder", [ref.get_adder_optimize_av] if ref_available else [])
+def test_get_adder_optimize_av(get_adder):
+    AV_THRESHOLD = 230_000
+    qpu = build_qpu(
+        state_size=8, coefficients=[0.1] * 8, offsets=list(range(1, 9)),
+        bits_of_precision=5, buffer=20, adder=get_adder()
+    )    
+    av = float(resource_estimator(qpu).resources()["active_volume"])
+
+    assert av < AV_THRESHOLD, f"Active volume {av:,.1f} is above {AV_THRESHOLD:,}"
+    print(f"Active volume {av:,.1f} is below {AV_THRESHOLD:,}!")
+
+
+@mark.parametrize("get_adder", [ref.get_adder_optimize_av_highwater] if ref_available else [])
+def test_get_adder_optimize_av_highwater(get_adder):
+    AV_THRESHOLD_2 = 250_000
+    HW_THRESHOLD_2 = 26
+    qpu = build_qpu(
+        state_size=8, coefficients=[0.1] * 8, offsets=list(range(1, 9)),
+        bits_of_precision=5, buffer=20, adder=get_adder()
+    )    
+    resources = resource_estimator(qpu).resources()
+    av, highwater = float(resources["active_volume"]), int(resources["qubit_highwater"])
+
+    assert av < AV_THRESHOLD_2, f"Active volume {av:,.1f} is above {AV_THRESHOLD_2:,}"
+    assert highwater <= HW_THRESHOLD_2, f"Qubit highwater {highwater} exceeds {HW_THRESHOLD_2}"
+    print(f"Active volume {av:,.1f} is below {AV_THRESHOLD_2:,}!")
+    print(f"Qubit highwater {highwater} is less than or equal to {HW_THRESHOLD_2}!")
+
+
+####################################################################################################
+
+@mark.parametrize("qbk_class", [ref.MockedRoutine] if ref_available else [])
+def test_mockedroutine(qbk_class):
+    for N in [8, 64, 1024]:
+        global log_message
+        log_message = f"Testing N={N}"
+
+        qpu = QPU(num_qubits=64, filters=[">>buffer>>"])
+        qbk_class(N=N, qc=qpu).compute()  # no register arguments -> need to pass qc= explicitly
+        resources = resource_estimator(qpu).resources()
+
+        expected_av = N ** 2
+        if resources["active_volume"] != expected_av:
+            raise Exception(
+                f"Active volume should equal N**2: expected {expected_av}, "
+                f"got {resources['active_volume']}"
+            )
+
+        expected_highwater = int(np.ceil(np.log2(N)))
+        if resources["qubit_highwater"] != expected_highwater:
+            raise Exception(
+                f"Qubit highwater should equal ceil(log2 N): expected {expected_highwater}, "
+                f"got {resources['qubit_highwater']}"
+            )
+
+            
 ####################################################################################################
 
 import matplotlib.pyplot as plt

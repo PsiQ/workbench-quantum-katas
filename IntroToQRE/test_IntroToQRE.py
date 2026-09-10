@@ -150,12 +150,12 @@ def test_rs_synth_circuit(fun: Callable[[], QPU]) -> None:
     t_per_qubit = _t_gates_per_qubit(qpu)
     if t_per_qubit[0] != 1:
         raise ValueError(
-            "Qubit 0 should carry an Rz(45°) (compiled to exactly one T gate) but has "
+            "Qubit 0 should carry a rotation by 45° (compiled to exactly one T gate) but has "
             f"{t_per_qubit[0]} T gates; did you put the right rotation(s) there?"
         )
     if t_per_qubit[1] < 2:
         raise ValueError(
-            "Qubit 1 should carry an off-grid Rz(22.5°) that synthesizes into several "
+            "Qubit 1 should carry an off-grid rotation that synthesizes into several "
             f"T gates, but has {t_per_qubit[1]} T gates; did you put the right rotation(s) there?"
         )
 
