@@ -306,7 +306,7 @@ def test_get_adder_optimize_av_highwater(get_adder):
     assert av < AV_THRESHOLD_2, f"Active volume {av:,.1f} is above {AV_THRESHOLD_2:,}"
     assert highwater <= HW_THRESHOLD_2, f"Qubit highwater {highwater} exceeds {HW_THRESHOLD_2}"
     print(f"Active volume {av:,.1f} is below {AV_THRESHOLD_2:,}!")
-    print(f"Qubit highwater {highwater} is less or equal to {HW_THRESHOLD_2}!")
+    print(f"Qubit highwater {highwater} is less than or equal to {HW_THRESHOLD_2}!")
 
 
 ####################################################################################################
