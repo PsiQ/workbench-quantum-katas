@@ -12,7 +12,7 @@ You'll also need to install `pytest` and `scipy` for several of the advanced kat
 pip install psiqdk pytest scipy
 ```
 
-Another option is to use GitHub Codespaces. From the Quantum Katas repository [home page](https://github.com/PsiQ/workbench-quantum-katas), click the green `<> Code` button, switch from `Local` to `Codespaces`, and then click the plus to create a codespace on the main branch. Please note that it may take a few minutes the first time the codespace is created because it also installs Python and the required modules. Also, if prompted to select a Python kernel, please choose `.venv` which is the prepared virtual environment. [Click here](https://github.com/features/codespaces) to learn more about GitHub Codespaces, as it is the user's responsibility to maintain and delete codespaces.
+Another option is to use GitHub Codespaces. From the Quantum Katas repository [home page](https://github.com/PsiQ/workbench-quantum-katas), click the green `<> Code` button, switch from `Local` to `Codespaces`, and then click the plus to create a codespace on the main branch. If you do not see the `Codespaces` option, make sure that you are logged in to GitHub. Please note that it may take a few minutes the first time the codespace is created because it also installs Python and the required modules. Also, if prompted to select a Python kernel, please choose `.venv` which is the prepared virtual environment. [Click here](https://github.com/features/codespaces) to learn more about GitHub Codespaces, as it is the user's responsibility to maintain and delete codespaces.
 
 ## User workflow
 
