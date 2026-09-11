@@ -3,38 +3,35 @@
 {
 	"name": "Python 3",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/python:3-3.14-trixie",
+	"image": "mcr.microsoft.com/devcontainers/python:3-3.13-trixie",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+    // Configure tool-specific properties.
+    // "customizations": {},
+    "customizations": {
+        "vscode": {
+        "settings": {
+            "jupyter.notebokControllerDefault": "ms-python.python",
+            "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+            "jupyter.defaultKernel": "${workspaceFolder}/.venv/bin/python",
+            "jupyter.askForKernelSelectionOnStartup": false,
+        },
+        "extensions": [
+            "ms-python.python",       // Core Python support
+            "ms-python.vscode-pylance", // Intellisense and autocomplete
+            "ms-toolsai.jupyter"      // Native Jupyter Notebook rendering
+        ],
+        },
+    },
 
-
-	// Configure tool-specific properties.
-	// "customizations": {},
-	"customizations": {
-		"vscode": {
-		"settings": {
-			"jupyter.notebokControllerDefault": "ms-python.python",
-			"python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
-			"jupyter.askForKernelSelectionOnStartup": false,
-		},
-		"extensions": [
-			"ms-python.python",       // Core Python support
-			"ms-python.vscode-pylance", // Intellisense and autocomplete
-			"ms-toolsai.jupyter"      // Native Jupyter Notebook rendering
-		],
-		},
-	},
-
-	"containerEnv": {
-		"VIRTUAL_ENV": "${workspaceFolder}/.venv",
-		"PATH": "${workspaceFolder}/.venv/bin:${localEnv:PATH}"
-	},
-	
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "pip3 install --user -r requirements.txt",
-	"postCreateCommand": "python3 -m venv .venv && .venv/bin/pip install --upgrade pip && .venv/bin/pip install -r requirements.txt",
+    "containerEnv": {
+        "VIRTUAL_ENV": "${workspaceFolder}/.venv",
+        "PATH": "${workspaceFolder}/.venv/bin:${localEnv:PATH}"
+    },
+    
+    // Use 'postCreateCommand' to run commands after the container is created.
+    // "postCreateCommand": "pip3 install --user -r requirements.txt",
+    "postCreateCommand": "python3 -m venv .venv && .venv/bin/pip install --upgrade pip && .venv/bin/pip install -r requirements.txt",
 }
