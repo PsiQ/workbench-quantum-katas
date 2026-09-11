@@ -334,3 +334,22 @@ def test_mockedroutine(qbk_class):
                 f"Qubit highwater should equal ceil(log2 N): expected {expected_highwater}, "
                 f"got {resources['qubit_highwater']}"
             )
+
+            
+####################################################################################################
+
+import matplotlib.pyplot as plt
+
+def plot_landscape(landscape, xrange, yrange, parameter, xlabel, ylabel):
+    fig, ax = plt.subplots()
+    im = ax.imshow(landscape, origin="lower", aspect="auto", cmap="viridis")
+    ax.set_xticks(range(len(xrange)))
+    ax.set_xticklabels(xrange)
+    ax.set_yticks(range(len(yrange)))
+    ax.set_yticklabels(yrange)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(f"{parameter.capitalize()} landscape")
+    fig.colorbar(im, ax=ax, label=parameter)
+
+    plt.show()
