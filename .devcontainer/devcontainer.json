@@ -14,8 +14,8 @@
         "vscode": {
         "settings": {
             "jupyter.notebokControllerDefault": "ms-python.python",
-            "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
-            "jupyter.defaultKernel": "${workspaceFolder}/.venv/bin/python",
+            "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python",
+            "jupyter.defaultKernel": "${containerWorkspaceFolder}/.venv/bin/python",
             "jupyter.askForKernelSelectionOnStartup": false,
         },
         "extensions": [
@@ -27,12 +27,12 @@
     },
 
     "containerEnv": {
-        "VIRTUAL_ENV": "${workspaceFolder}/.venv",
-        "PATH": "${workspaceFolder}/.venv/bin:${localEnv:PATH}"
+        "VIRTUAL_ENV": "${containerWorkspaceFolder}/.venv",
+        "PATH": "${containerWorkspaceFolder}/.venv/bin:${localEnv:PATH}"
     },
     
     // Use 'postCreateCommand' to run commands after the container is created.
     // "postCreateCommand": "pip3 install --user -r requirements.txt",
-    "postCreateCommand": "python3 -m venv .venv && .venv/bin/pip install --upgrade pip && .venv/bin/pip install psiqdk==2.4.0 jupyter 'pytest>=8.2.2,<9.0.0' 'scipy>=1.13.0,<2.0.0' && echo '\n\n Setup complete! Don't forget to use .venv for your Python interpreter'",
+    "postCreateCommand": "python3 -m venv .venv && .venv/bin/pip install --upgrade pip && .venv/bin/pip install psiqdk==2.4.0 jupyter 'pytest>=8.2.2,<9.0.0' 'scipy>=1.13.0,<2.0.0'",
 }
 
