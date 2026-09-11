@@ -19,6 +19,7 @@
 		"settings": {
 			"jupyter.notebokControllerDefault": "ms-python.python",
 			"python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+			"jupyter.askForKernelSelectionOnStartup": false,
 		},
 		"extensions": [
 			"ms-python.python",       // Core Python support
