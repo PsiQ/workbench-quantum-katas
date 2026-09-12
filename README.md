@@ -4,7 +4,7 @@ The Quantum Katas are a collection of self-paced tutorials and programming probl
 
 ## Prerequisites
 
-To use the Quantum Katas, you need to install [PsiQuantum Quantum Development Kit](https://construct.psiquantum.com/docs/), the Python toolkit for developing fault-tolerant quantum algorithms. You can find the complete installation guide and requirements in [PsiQDK documentation](https://construct.psiquantum.com/docs/psiqdk/installation.html).
+To use the Quantum Katas, you need to install [PsiQuantum Quantum Development Kit](https://docs.construct.psiquantum.com/), the Python toolkit for developing fault-tolerant quantum algorithms. You can find the complete installation guide and requirements in [PsiQDK documentation](https://docs.construct.psiquantum.com/psiqdk/installation.html).
 
 You'll also need to install `pytest` and `scipy` for several of the advanced katas.
 
