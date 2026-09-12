@@ -27,6 +27,6 @@
     
     // Use 'postCreateCommand' to run commands after the container is created.
     // "postCreateCommand": "pip3 install --user -r requirements.txt",
-    "postCreateCommand": "python3 -m venv .venv && .venv/bin/pip install --upgrade pip && .venv/bin/pip install psiqdk==2.4.0 jupyter 'pytest>=8.2.2,<9.0.0' 'scipy>=1.13.0,<2.0.0'",
+    "postCreateCommand": "python3 -m venv .venv && .venv/bin/pip install --upgrade pip && .venv/bin/pip install psiqdk jupyter 'pytest>=8.2.2,<9.0.0' 'scipy>=1.13.0,<2.0.0'",
 }
 
