@@ -55,7 +55,12 @@ def print_colored_matrix(matrix: list[list[float]], w: list[float]) -> None:
         for val in row:
             matched_color_indices = np.where(np.isclose(w, val))[0]
             if len(matched_color_indices) != 0:
-                color = colors[int(matched_color_indices[0])]
+                # assume we only have a single match, or else we just pick the first
+                matched_index = int(matched_color_indices[0])
+                color = colors[matched_index]
+                # floating point error can make printing ugly.
+                # if we have a match, just print the ideal value
+                val = w[matched_index]
             else:
                 color = "lightgray"
             html.append(f"<td style='padding: 5px 10px; font-weight: bold; color: {color};'>{val}</td>")
