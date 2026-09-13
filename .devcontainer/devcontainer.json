@@ -1,0 +1,32 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+	"name": "Python 3",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/python:3-3.13-trixie",
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+
+    // Configure tool-specific properties.
+    // "customizations": {},
+    "customizations": {
+        "vscode": {
+        "settings": {
+            "jupyter.notebokControllerDefault": "ms-python.python",
+            "jupyter.kernels.excludePythonEnvironments": ["/usr/local/bin/python","/usr/bin/python3"],
+            "jupyter.askForKernelSelectionOnStartup": false,
+        },
+        "extensions": [
+            "ms-python.python",       // Core Python support
+            "ms-python.vscode-pylance", // Intellisense and autocomplete
+            "ms-toolsai.jupyter"      // Native Jupyter Notebook rendering
+        ],
+        },
+    },
+    
+    // Use 'postCreateCommand' to run commands after the container is created.
+    // "postCreateCommand": "pip3 install --user -r requirements.txt",
+    "postCreateCommand": "python3 -m venv .venv && .venv/bin/pip install --upgrade pip && .venv/bin/pip install psiqdk jupyter 'pytest>=8.2.2,<9.0.0' 'scipy>=1.13.0,<2.0.0'",
+}
+
