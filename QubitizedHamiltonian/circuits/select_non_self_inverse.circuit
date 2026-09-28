@@ -1,0 +1,535 @@
+{
+  "record_type": "psiquantum.circuit",
+  "title": "Untitled Circuit",
+  "copyright": "Copyright © 2026. All rights reserved.",
+  "record_format": 3,
+  "modified": "2026-07-27T09:46:45.381Z",
+  "style": {
+    "title_el": {
+      "visible": false
+    }
+  },
+  "root": {
+    "id": "__ROOT__",
+    "type": "__ROOT__",
+    "input_registers": "*",
+    "children": [
+      {
+        "id": "r1",
+        "type": "register",
+        "label": "\\text{coefficients}",
+        "style": {
+          "rail_state": "in_use"
+        }
+      },
+      {
+        "type": "register",
+        "id": "r2",
+        "label": "\\text{add/subtract}",
+        "style": {
+          "rail_state": "in_use"
+        }
+      },
+      {
+        "type": "register",
+        "id": "r3",
+        "label": "\\text{addends}",
+        "style": {
+          "rail_state": "free"
+        }
+      },
+      {
+        "type": "register",
+        "id": "r4",
+        "label": "\\text{system}",
+        "style": {
+          "rail_state": "in_use"
+        }
+      },
+      {
+        "input_registers": "r1,r3",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column1",
+        "children": [
+          {
+            "name": "routine",
+            "label": "j",
+            "input_registers": "r1",
+            "type": "routine",
+            "id": "routine1",
+            "style": {
+              "box_el": {
+                "shape": "hexagon"
+              }
+            },
+            "tags": [
+              "red"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "j+1",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine2",
+            "style": {
+              "rail_state": "in_use"
+            },
+            "tags": [
+              "red"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r2,r3,r4",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column2",
+        "children": [
+          {
+            "name": "routine",
+            "label": "\\textbf{+}",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine3",
+            "controlled_by": "~r2",
+            "tags": [
+              "blue"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "=",
+            "input_registers": "r4",
+            "type": "routine",
+            "id": "routine4",
+            "tags": [
+              "blue"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r2,r3,r4",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column3",
+        "children": [
+          {
+            "name": "routine",
+            "label": "-",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine5",
+            "controlled_by": "r2",
+            "tags": [
+              "blue"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "=",
+            "input_registers": "r4",
+            "type": "routine",
+            "id": "routine6",
+            "tags": [
+              "blue"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r1,r3",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column4",
+        "children": [
+          {
+            "name": "routine",
+            "label": "j",
+            "input_registers": "r1",
+            "type": "routine",
+            "id": "routine7",
+            "style": {
+              "box_el": {
+                "shape": "hexagon"
+              }
+            },
+            "tags": [
+              "red"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "(j+1)^\\dagger",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine8",
+            "style": {
+              "rail_state": "free"
+            },
+            "tags": [
+              "red"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r1,r3",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column5",
+        "children": [
+          {
+            "name": "routine",
+            "label": "j",
+            "input_registers": "r1",
+            "type": "routine",
+            "id": "routine9",
+            "style": {
+              "box_el": {
+                "shape": "hexagon"
+              }
+            },
+            "tags": [
+              "red"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "j+1",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine10",
+            "style": {
+              "rail_state": "in_use"
+            },
+            "tags": [
+              "red"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r2,r3,r4",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column6",
+        "children": [
+          {
+            "name": "routine",
+            "label": "\\textbf{+}",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine11",
+            "controlled_by": "~r2",
+            "tags": [
+              "blue"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "=",
+            "input_registers": "r4",
+            "type": "routine",
+            "id": "routine12",
+            "tags": [
+              "blue"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r2,r3,r4",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column7",
+        "children": [
+          {
+            "name": "routine",
+            "label": "-",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine13",
+            "controlled_by": "r2",
+            "tags": [
+              "blue"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "=",
+            "input_registers": "r4",
+            "type": "routine",
+            "id": "routine14",
+            "tags": [
+              "blue"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r1,r3",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column8",
+        "children": [
+          {
+            "name": "routine",
+            "label": "j",
+            "input_registers": "r1",
+            "type": "routine",
+            "id": "routine15",
+            "style": {
+              "box_el": {
+                "shape": "hexagon"
+              }
+            },
+            "tags": [
+              "red"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "(j+1)^\\dagger",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine16",
+            "style": {
+              "rail_state": "free"
+            },
+            "tags": [
+              "red"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r1,r2,r3,r4",
+        "tags": [
+          "equals"
+        ],
+        "type": "separator",
+        "id": "separator1"
+      },
+      {
+        "input_registers": "r1,r3",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column9",
+        "children": [
+          {
+            "name": "routine",
+            "label": "j",
+            "input_registers": "r1",
+            "type": "routine",
+            "id": "routine17",
+            "style": {
+              "box_el": {
+                "shape": "hexagon"
+              }
+            },
+            "tags": [
+              "red"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "j+1",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine18",
+            "style": {
+              "rail_state": "in_use"
+            },
+            "tags": [
+              "red"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r2,r3,r4",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column10",
+        "children": [
+          {
+            "name": "routine",
+            "label": "\\textbf{+}",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine19",
+            "controlled_by": "~r2",
+            "tags": [
+              "blue"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "=",
+            "input_registers": "r4",
+            "type": "routine",
+            "id": "routine20",
+            "tags": [
+              "blue"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r2,r3,r4",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column14",
+        "children": [
+          {
+            "name": "routine",
+            "label": "\\textbf{+}",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine27",
+            "controlled_by": "~r2",
+            "tags": [
+              "blue"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "=",
+            "input_registers": "r4",
+            "type": "routine",
+            "id": "routine28",
+            "tags": [
+              "blue"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r2,r3,r4",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column11",
+        "children": [
+          {
+            "name": "routine",
+            "label": "-",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine21",
+            "controlled_by": "r2",
+            "tags": [
+              "blue"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "=",
+            "input_registers": "r4",
+            "type": "routine",
+            "id": "routine22",
+            "tags": [
+              "blue"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r2,r3,r4",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column15",
+        "children": [
+          {
+            "name": "routine",
+            "label": "-",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine29",
+            "controlled_by": "r2",
+            "tags": [
+              "blue"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "=",
+            "input_registers": "r4",
+            "type": "routine",
+            "id": "routine30",
+            "tags": [
+              "blue"
+            ]
+          }
+        ]
+      },
+      {
+        "input_registers": "r1,r3",
+        "style": {
+          "connection_style": "quantum"
+        },
+        "type": "column",
+        "id": "column16",
+        "children": [
+          {
+            "name": "routine",
+            "label": "j",
+            "input_registers": "r1",
+            "type": "routine",
+            "id": "routine31",
+            "style": {
+              "box_el": {
+                "shape": "hexagon"
+              }
+            },
+            "tags": [
+              "red"
+            ]
+          },
+          {
+            "name": "routine",
+            "label": "(j+1)^\\dagger",
+            "input_registers": "r3",
+            "type": "routine",
+            "id": "routine32",
+            "style": {
+              "rail_state": "free"
+            },
+            "tags": [
+              "red"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
