@@ -348,7 +348,7 @@ def test_apply_and_use_measurements(fun):
 
 ####################################################################################################
 
-@mark.parametrize("fun", [ref.GHZ] if ref_available else [])
+@mark.parametrize("qbk_class", [ref.GHZ] if ref_available else [])
 def test_ghz(qbk_class):
     for i in range(3, 6):
         qpu = QPU(num_qubits=i)
