@@ -33,20 +33,27 @@ except ImportError:
     # Skip all tests in this file - pytest checks reference solutions and that won't work without these imports
     pytestmark = mark.skip("No importnb/reference file available")
 
+log_message = ""
+
 def problem(arg):
-    """Run ``test_<arg.__name__>`` against ``arg`` and print a verdict."""
-    test_name = "test_" + arg.__name__.lower()
-    test_func = globals().get(test_name)
-    if test_func is None:
-        print(f"Test {test_name} not found.")
-        return arg
     try:
-        test_func(arg)
-    except Exception as e:  # noqa: BLE001 - surface any failure as feedback
-        print("Incorrect")
-        print(str(e))
+        # Build test name
+        test_name = "test_" + arg.__name__.lower()
+        # Find test function; if none found, raise an exception
+        test_func = globals()[test_name]
+    except KeyError:
+        print(f"Test {test_name} not found")
     else:
-        print("Correct!")
+        try:
+            test_func(arg)
+        except Exception as e:
+            print("Incorrect")
+            if log_message != "":
+                print(log_message)
+            print(str(e))
+        else:
+            print("Correct!")
+    
     return arg
 
 
