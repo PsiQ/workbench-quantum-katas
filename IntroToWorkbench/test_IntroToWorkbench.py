@@ -61,12 +61,12 @@ def problem(arg):
 
 @mark.parametrize("fun", [ref.instantiate_qpu] if ref_available else [])
 def test_instantiate_qpu(fun):
-    for num_qubits in [1, 2, 3, 4, 5, 6]:
+    for num_qubits in range(1, 7):
         actual = fun(num_qubits)
 
         if not isinstance(actual, QPU):
             print(f"Testing {num_qubits} qubits")
-            raise ValueError(f"Expected a QPU, got {type(actual).__name__}.")
+            raise ValueError(f"Expected a QPU object, got {type(actual).__name__}.")
 
         if actual.num_qubits != num_qubits:
             print(f"Testing {num_qubits} qubits")
@@ -77,31 +77,29 @@ def test_instantiate_qpu(fun):
 
 @mark.parametrize("fun", [ref.instantiate_qubits] if ref_available else [])
 def test_instantiate_qubits(fun):
-    for num_qubits in [1, 2, 3, 4, 5, 6]:
+    for num_qubits in range(1, 7):
         qpu = QPU(num_qubits=num_qubits)
         actual = fun(qpu, num_qubits, f"reg{num_qubits}")
 
         if not isinstance(actual, Qubits):
-            print(f"Testing Qubit Instantiation with {num_qubits} qubits")
-            raise ValueError(f"Expected a Qubits, got {type(actual).__name__}.")
+            print(f"Testing qubit instantiation with {num_qubits} qubits")
+            raise ValueError(f"Expected a Qubits object, got {type(actual).__name__}.")
 
         if actual.num_qubits != num_qubits:
-            print(f"Testing Qubit Instantiation with {num_qubits} qubits")
+            print(f"Testing qubit instantiation with {num_qubits} qubits")
             raise ValueError(f"Expected {num_qubits} qubits, got {actual.num_qubits}.")
         
         if actual.name != f"reg{num_qubits}":
-            print(f"Testing Qubit Instantiation with {num_qubits} qubits")
-            raise ValueError(f"Expected reg{num_qubits} name, got {actual.name}.")
+            print(f"Testing qubit instantiation with {num_qubits} qubits")
+            raise ValueError(f"Expected name 'reg{num_qubits}', got '{actual.name}'.")
 
 
 ####################################################################################################
 
 @mark.parametrize("fun", [ref.apply_gates] if ref_available else [])
 def test_apply_gates(fun):
-    angles = [i for i in range(10, 180, 10)]
-    qubit_sizes = [1, 2, 3, 4, 5, 6]
-    for qubit_size in qubit_sizes:
-        for angle in angles:
+    for qubit_size in range(1, 7):
+        for angle in range(10, 180, 10):
             qpu = QPU(num_qubits=qubit_size)
             reg = Qubits(qubit_size, f"reg{qubit_size}", qpu=qpu)
             fun(reg, angle)
@@ -109,38 +107,33 @@ def test_apply_gates(fun):
             found_x = False
             found_rx = False
 
-            target_size = 0
-            for i in range(qubit_size):
-                target_size |= 1 << i
+            target_mask = (1 << qubit_size) - 1
 
             for inst in qpu.get_instructions():
                 if inst.opcode is opcodes.OP_qc_x:
-                    if inst.target == target_size:
+                    if inst.target == target_mask:
                         found_x = True
                     else:
-                        print(f"Testing gate application with angle {angle} and qubit size {qubit_size}")
-                        raise ValueError(f"Expected x gate on qubit mask {target_size}, got {inst.target}.")
+                        raise ValueError(f"For {qubit_size} qubits, expected `x` gate applied to all qubits of the register, got a subset of qubits instead.")
                     continue
 
                 if inst.opcode is opcodes.OP_qc_rx and found_x:
-                    if inst.target == target_size:
+                    if inst.target == target_mask:
                         found_rx = True
                     else:
-                        raise ValueError(f"Expected rx gate on qubit mask {target_size}, got {inst.target}.")
+                        raise ValueError(f"For {qubit_size} qubits, expected `rx` gate applied to all qubits of the register, got a subset of qubits instead.")
 
                     if inst.theta != angle:
-                        print(f"Testing gate application with angle {angle} and qubit size {qubit_size}")
-                        raise ValueError(f"Expected rx gate with angle {angle}, got {inst.theta}.")
+                        raise ValueError(f"Expected `rx` gate with angle {angle}, got angle {inst.theta}.")
                     continue
 
                 if is_physical_operation(inst.opcode):
-                    print(f"Testing gate application with angle {angle} and qubit size {qubit_size}")
                     raise ValueError(f"Found an unexpected quantum operation {opcode_to_opname(inst.opcode)}.")
 
             if not found_x:
-                raise ValueError("Expected x gate, but no x gate found.")
+                raise ValueError("Expected `x` gate, but no `x` gate found.")
             if not found_rx:
-                raise ValueError("Expected rx gate, but no rx gate found.")
+                raise ValueError("Expected `rx` gate, but no `rx` gate found.")
 
 
 ####################################################################################################
