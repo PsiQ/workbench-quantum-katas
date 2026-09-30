@@ -7,7 +7,6 @@ and prints ``Correct!`` or a hint.
 """
 from __future__ import annotations
 
-from re import T
 from typing import Callable
 
 import psiqdk.workbench.opcodes as opcodes
