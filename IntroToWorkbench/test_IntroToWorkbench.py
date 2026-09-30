@@ -7,6 +7,7 @@ and prints ``Correct!`` or a hint.
 """
 from __future__ import annotations
 
+from re import T
 from typing import Callable
 
 import psiqdk.workbench.opcodes as opcodes
@@ -104,36 +105,38 @@ def test_apply_gates(fun):
             reg = Qubits(qubit_size, f"reg{qubit_size}", qpu=qpu)
             fun(reg, angle)
 
-            found_x = False
-            found_rx = False
-
             target_mask = (1 << qubit_size) - 1
+            found_insts = []
+            expected_insts = [opcodes.OP_qc_x, opcodes.OP_qc_rx]
 
             for inst in qpu.get_instructions():
-                if inst.opcode is opcodes.OP_qc_x:
-                    if inst.target == target_mask:
-                        found_x = True
-                    else:
-                        raise ValueError(f"For {qubit_size} qubits, expected `x` gate applied to all qubits of the register, got a subset of qubits instead.")
+                if inst.opcode is opcodes.OP_qc_x or inst.opcode is opcodes.OP_qc_rx:
+                    found_insts.append(inst)
                     continue
-
-                if inst.opcode is opcodes.OP_qc_rx and found_x:
-                    if inst.target == target_mask:
-                        found_rx = True
-                    else:
-                        raise ValueError(f"For {qubit_size} qubits, expected `rx` gate applied to all qubits of the register, got a subset of qubits instead.")
-
-                    if inst.theta != angle:
-                        raise ValueError(f"Expected `rx` gate with angle {angle}, got angle {inst.theta}.")
-                    continue
-
+                
                 if is_physical_operation(inst.opcode):
                     raise ValueError(f"Found an unexpected quantum operation {opcode_to_opname(inst.opcode)}.")
 
-            if not found_x:
-                raise ValueError("Expected `x` gate, but no `x` gate found.")
-            if not found_rx:
-                raise ValueError("Expected `rx` gate, but no `rx` gate found.")
+
+            if len(found_insts) != len(expected_insts):
+                raise ValueError(f"Expected {len(expected_insts)} operations, got {len(found_insts)}.")
+
+            for index, inst in enumerate(found_insts):
+                if inst.opcode is not expected_insts[index]:
+                    raise ValueError(f"Expected {opcode_to_opname(expected_insts[index])} operation, found {opcode_to_opname(inst.opcode)} operation.")
+
+                if inst.target != target_mask:
+                    target_str = str(bin(inst.target)[2:].zfill(qubit_size))
+                    target_str_list = []
+                    for i,s in enumerate(target_str[::-1]):
+                        if s == '1':
+                            target_str_list.append(str(i))
+                    target_str = ", ".join(target_str_list)
+                    raise ValueError(f"For {qubit_size} qubits, expected `x` gate applied to all qubits of the register, got a subset of qubits {target_str} instead.")
+
+                if inst.opcode is opcodes.OP_qc_rx:
+                    if inst.theta != angle:
+                        raise ValueError(f"Expected `rx` gate with angle {angle}, got angle {inst.theta}.")
 
 
 ####################################################################################################
@@ -145,43 +148,40 @@ def test_apply_controlled_gates(fun):
     reg2 = Qubits(1, f"reg2", qpu=qpu)
     fun(reg1, reg2)
 
-    found_list = [False, False, False]
-
     reg1_mask = 1
     reg2_mask = 2
 
     looking_for_cx = [(reg1_mask, reg2_mask, False), (reg1_mask, reg2_mask, True), (reg2_mask, reg1_mask, False)]
-    looking_for_index = 0
-    seen_cxs = 0
+    found_insts = []
     for inst in qpu.get_instructions():
         if inst.opcode is not opcodes.OP_qc_x:
             if is_physical_operation(inst.opcode):
                 raise ValueError(f"Found an unexpected quantum operation {opcode_to_opname(inst.opcode)}.")
             continue
-        if looking_for_index >= len(looking_for_cx):
-            raise ValueError("Found more cx gates than expected.")
-        seen_cxs += 1
-        condition, target, negated = looking_for_cx[looking_for_index]
+        found_insts.append(inst)
+
+    if len(found_insts) != len(looking_for_cx):
+        raise ValueError(f"Expected {len(looking_for_cx)} cx gates, got {len(found_insts)}.")
+
+    for index, inst in enumerate(found_insts):
+        condition, target, negated = looking_for_cx[index]
         if inst.condition == condition and inst.target == target:
             if negated and inst.cond_xor == condition:
-                found_list[looking_for_index] = True
-                looking_for_index += 1
+                continue
             elif not negated and inst.cond_xor == 0:
-                found_list[looking_for_index] = True
-                looking_for_index += 1
-            else:
-                if negated:
-                    bad_negation = 'negated' if inst.cond_xor != 0 else 'non-negated'
-                    raise ValueError(
-                        f"Expected negated controlled x gate on qubit mask {condition} and {target}, "
-                        f"but found {bad_negation} cx gate with condition {inst.cond_xor} and target {inst.target}."
-                    )
-                else:
-                    bad_negation = 'negated' if inst.cond_xor != 0 else 'non-negated'
-                    raise ValueError(
-                        f"Expected controlled x gate on qubit mask {condition} and {target}, "
-                        f"but found {bad_negation} cx gate with condition {inst.cond_xor} and target {inst.target}."
-                    )
+                continue
+
+        negated_str = '==0' if negated else '==1'
+        bad_negation = f'=={inst.cond_xor ^ 1}' if inst.cond_xor != 0 else '==1'
+        condition_name = "reg1" if inst.condition & reg1_mask else "reg2"
+        target_name = "reg1" if inst.target & reg1_mask else "reg2"
+        expected_condition = "reg1" if condition & reg1_mask else "reg2"
+        expected_target = "reg1" if target & reg1_mask else "reg2"
+        raise ValueError(
+            f"Expected controlled x gate on qubit condition {expected_condition}{negated_str} and target {expected_target}, "
+            f"but found cx gate with condition {condition_name}{bad_negation} and target {target_name}."
+        )
+
 
 @mark.parametrize("fun", [ref.indexing_and_slicing] if ref_available else [])
 def test_indexing_and_slicing(fun):
@@ -197,26 +197,35 @@ def test_indexing_and_slicing(fun):
                 reg2_mask |= 1 << j
 
         looking_for_x = [reg1_mask, reg2_mask]
-        looking_for_index = 0
+        found_insts = []
         for inst in qpu.get_instructions():
             if inst.opcode is not opcodes.OP_qc_x:
                 if is_physical_operation(inst.opcode):
                     print(f"Testing indexing and slicing with {i} qubits")
                     raise ValueError(f"Found an unexpected quantum operation {opcode_to_opname(inst.opcode)}.")
                 continue
-            if looking_for_index >= len(looking_for_x):
-                print(f"Testing indexing and slicing with {i} qubits")
-                raise ValueError("Found more cx gates than expected.")
-            if inst.target == looking_for_x[looking_for_index]:
-                looking_for_index += 1
-            else:
-                print(f"Testing indexing and slicing with {i} qubits")
-                raise ValueError(
-                    f"Expected x gate on qubit mask {looking_for_x[looking_for_index]}, got {inst.target}."
-                )
-        if looking_for_index != len(looking_for_x):
+            found_insts.append(inst)
+        
+        if len(found_insts) != len(looking_for_x):
             print(f"Testing indexing and slicing with {i} qubits")
-            raise ValueError(f"Expected {len(looking_for_x)} x gates, got {looking_for_index}.")
+            raise ValueError(f"Expected {len(looking_for_x)} x gates, got {len(found_insts)}.")
+
+        for index, inst in enumerate(found_insts):
+            if inst.target != looking_for_x[index]:
+                print(f"Testing indexing and slicing with {i} qubits")
+                expected_str = str(bin(looking_for_x[index])[2:].zfill(i))
+                expected_str_list = []
+                for i,s in enumerate(expected_str[::-1]):
+                    if s == '1':
+                        expected_str_list.append(str(i))
+                expected_str = ", ".join(expected_str_list)
+                target_str = str(bin(inst.target)[2:].zfill(i))
+                target_str_list = []
+                for i,s in enumerate(target_str[::-1]):
+                    if s == '1':
+                        target_str_list.append(str(i))
+                target_str = ", ".join(target_str_list)
+                raise ValueError(f"Expected x gate on qubits {expected_str} of `reg`, got qubits {target_str} of `reg`.")
 
 
 ####################################################################################################
@@ -234,34 +243,48 @@ def test_concatenate_registers(fun):
     check_3_mask = 7
 
     looking_for_ops = [(check_1_mask, opcodes.OP_qc_x), (check_2_mask, opcodes.OP_qc_y), (check_3_mask, opcodes.OP_qc_z)]
-    looking_for_index = 0
+    found_insts = []
     for inst in qpu.get_instructions():
-        if looking_for_index >= len(looking_for_ops):
-            raise ValueError("Found more operations than expected.")
         if not is_physical_operation(inst.opcode):
             continue
-        if is_physical_operation(inst.opcode) and inst.opcode != looking_for_ops[looking_for_index][1]:
-            raise ValueError(f"Found an unexpected quantum operation {opcode_to_opname(inst.opcode)}.")
-        if inst.opcode is not looking_for_ops[looking_for_index][1]:
+    
+        found_insts.append(inst)
+    
+    if len(found_insts) != len(looking_for_ops):
+        raise ValueError(f"Expected {len(looking_for_ops)} operations, got {len(found_insts)}.")
+
+    for index, inst in enumerate(found_insts):
+        if inst.opcode != looking_for_ops[index][1]:
+            raise ValueError(f"Found an unexpected quantum operation {opcode_to_opname(inst.opcode)} for operation {index}, expected {opcode_to_opname(looking_for_ops[index][1])}.")
+        if inst.target != looking_for_ops[index][0]:
+            reg_list = []
+            if looking_for_ops[index][0] & 1:
+                reg_list.append("reg1")
+            if looking_for_ops[index][0] & 2:
+                reg_list.append("reg2")
+            if looking_for_ops[index][0] & 4:
+                reg_list.append("reg3")
+            expected_reg_str = ", ".join(reg_list)
+
+            reg_list = []
+            if inst.target & 1:
+                reg_list.append("reg1")
+            if inst.target & 2:
+                reg_list.append("reg2")
+            if inst.target & 4:
+                reg_list.append("reg3")
+            reg_str = ", ".join(reg_list)
+
             raise ValueError(
-                f"Expected {opcode_to_opname(looking_for_ops[looking_for_index][1])} gate on qubit mask "
-                f"{looking_for_ops[looking_for_index][0]}, got {opcode_to_opname(inst.opcode)}."
+                f"Expected {opcode_to_opname(looking_for_ops[index][1])} gate on qubits {expected_reg_str}, found on {reg_str}."
             )
-        if inst.target != looking_for_ops[looking_for_index][0]:
-            raise ValueError(
-                f"Expected {opcode_to_opname(looking_for_ops[looking_for_index][1])} gate on qubit mask "
-                f"{looking_for_ops[looking_for_index][0]}, got {inst.target}."
-            )
-        looking_for_index += 1
-    if looking_for_index != len(looking_for_ops):
-        raise ValueError(f"Expected {len(looking_for_ops)} operations, got {looking_for_index}.")
 
 
 ####################################################################################################
 
 @mark.parametrize("fun", [ref.examine_state_vector] if ref_available else [])
 def test_examine_state_vector(fun):
-    for i in [2, 3, 4]:
+    for i in range(2, 5):
         qpu = QPU(num_qubits=i)
         reg = Qubits(i, f"reg", qpu=qpu)
 
@@ -281,7 +304,7 @@ def test_examine_state_vector(fun):
             raise ValueError(f"Expected {len(expected_amps)} amplitudes, got {len(amps)}.")
 
         if not np.allclose(amps, expected_amps):
-            raise ValueError(f"Expected maximum amplitudes {arr}, got {amps}.")
+            raise ValueError(f"Expected maximum amplitudes {expected_amps}, got {amps}.")
         
         qpu = QPU(num_qubits=i)
         reg = Qubits(i, f"reg", qpu=qpu)
@@ -302,7 +325,7 @@ def test_examine_state_vector(fun):
             raise ValueError(f"Expected {len(expected_amps)} amplitudes, got {len(amps)}.")
 
         if not np.allclose(amps, expected_amps):
-            raise ValueError(f"Expected maximum amplitudes {arr}, got {amps}.")
+            raise ValueError(f"Expected maximum amplitudes {expected_amps}, got {amps}.")
 
 
 ####################################################################################################
@@ -331,11 +354,17 @@ def test_apply_and_use_measurements(fun):
         if i.opcode is not opcodes.OP_qc_read:
             continue
         if i.target != 7:
-            raise ValueError(f"Expected read on qubit mask 7, got {i.target}.")
+            target_str = str(bin(i.target)[2:].zfill(3))
+            target_str_list = []
+            for i,s in enumerate(target_str[::-1]):
+                if s == '1':
+                    target_str_list.append(str(i))
+            target_str = ", ".join(target_str_list)
+            raise ValueError(f"Expected read on qubit `reg`, got read on qubit subset {target_str}.")
         measure_found = True
     
     if not measure_found:
-        raise ValueError('Expected read on qubit "reg", not found.')
+        raise ValueError('Expected read on qubit `reg`, not found.')
 
     if 0 not in result_dict or 7 not in result_dict:
         raise ValueError(f"Expected 0 and 7 in result dictionary, got {list(result_dict.keys())}.")
@@ -356,15 +385,21 @@ def test_ghz(qbk_class):
         qbk = qbk_class()
         qbk.compute(reg1)
 
-        find = [opcodes.OP_qc_x] * (i - 1) + [opcodes.OP_qc_had]
+        find = [opcodes.OP_qc_had] + [opcodes.OP_qc_x] * (i - 1)
+        found_insts = []
         for inst in qpu.get_instructions():
             if not is_physical_operation(inst.opcode):
                 continue
-            if inst.opcode is not find[-1]:
-                print("Testing GHZ with {i} qubits")
-                raise ValueError(f"Found an unexpected quantum operation {opcode_to_opname(inst.opcode)}.")
-            
-            find = find[:-1]
+            found_insts.append(inst)
+
+        if len(find) != len(found_insts):
+            print(f"Testing GHZ with {i} qubits")
+            raise ValueError(f"Expected {len(find)} operations, got {len(found_insts)}.")
+
+        for index, inst in enumerate(found_insts):
+            if inst.opcode is not find[index]:
+                print(f"Testing GHZ with {i} qubits")
+                raise ValueError(f"Expected {opcode_to_opname(find[index])} operation, found {opcode_to_opname(inst.opcode)} operation.")
         
         amps = qpu.pull_state()
         expected_amps = np.array([0.0]*2**i)
@@ -374,43 +409,41 @@ def test_ghz(qbk_class):
             print(f"Testing GHZ with {i} qubits")
             raise ValueError(f"Expected amplitudes {expected_amps}, got {amps}.")
 
-        if len(find) != 0:
-            print(f"Testing GHZ with {i} qubits")
-            raise ValueError(f"Expected {i} operations, got {i - len(find)}.")
-
 
 ####################################################################################################
 
 @mark.parametrize("fun", [ref.apply_qubrick] if ref_available else [])
 def test_apply_qubrick(fun):
-    for i in range(2, 6):
-        qpu = fun(i + 1)
+    for i in range(3, 6):
+        qpu = fun(i)
 
-        find = [opcodes.OP_qc_x] * i + [opcodes.OP_qc_had]
+        find = [opcodes.OP_qc_had] + [opcodes.OP_qc_x] * (i - 1)
         qubrick_run = False
+        found_insts = []
         for inst in qpu.get_instructions():
             if not is_physical_operation(inst.opcode):
                 if inst.opcode is opcodes.OP_qc_qbk_compute_start:
                     qubrick_run = True
                 continue
-            if inst.opcode is not find[-1]:
-                print("Testing GHZ Qubrick with {i} qubits")
-                raise ValueError(f"Found an unexpected quantum operation {opcode_to_opname(inst.opcode)}.")
-            
-            find = find[:-1]
+            found_insts.append(inst)
 
         if not qubrick_run:
-            print("Testing GHZ Qubrick with {i} qubits")
+            print(f"Testing GHZ Qubrick with {i} qubits")
             raise ValueError("Expected a qubrick to be used, not found.")
 
-        if len(find) != 0:
-            print("Testing GHZ Qubrick with {i} qubits")
-            raise ValueError(f"Expected {i + 1} operations, got {i + 1 - len(find)}.")
+        if len(find) != len(found_insts):
+            print(f"Testing GHZ Qubrick with {i} qubits")
+            raise ValueError(f"Expected {len(find)} operations, got {len(found_insts)}.")
+        
+        for index, inst in enumerate(found_insts):
+            if inst.opcode is not find[index]:
+                print(f"Testing GHZ with {i} qubits")
+                raise ValueError(f"Expected {opcode_to_opname(find[index])} operation, found {opcode_to_opname(inst.opcode)} operation.")
         
         amps = qpu.pull_state()
-        expected_amps = np.array([0.0]*2**(i + 1))
+        expected_amps = np.array([0.0]*2**i)
         expected_amps[0] = 1.0 / np.sqrt(2)
-        expected_amps[2**(i + 1) - 1] = 1.0 / np.sqrt(2)
+        expected_amps[2**i - 1] = 1.0 / np.sqrt(2)
         if not np.allclose(amps, expected_amps):
             print("Testing GHZ Qubrick with {i} qubits")
             raise ValueError(f"Expected amplitudes {expected_amps}, got {amps}.")
