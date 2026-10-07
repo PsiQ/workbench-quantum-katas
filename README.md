@@ -6,10 +6,10 @@ The Quantum Katas are a collection of self-paced tutorials and programming probl
 
 To use the Quantum Katas, you need to install [PsiQuantum Quantum Development Kit](https://docs.construct.psiquantum.com/), the Python toolkit for developing fault-tolerant quantum algorithms. You can find the complete installation guide and requirements in [PsiQDK documentation](https://docs.construct.psiquantum.com/psiqdk/installation.html).
 
-You'll also need to install `pytest` and `scipy` for several of the advanced katas.
+You'll also need to install `pytest` for several of the advanced katas.
 
 ```bash
-pip install psiqdk pytest scipy
+pip install psiqdk pytest
 ```
 
 Another option is to use GitHub Codespaces. From the Quantum Katas repository [home page](https://github.com/PsiQ/workbench-quantum-katas), click the green `<> Code` button, switch from `Local` to `Codespaces`, and then click the plus to create a codespace on the main branch. If you do not see the `Codespaces` option, make sure that you are logged in to GitHub. Please note that it may take a few minutes the first time the codespace is created because it also installs Python and the required modules. [Click here](https://github.com/features/codespaces) to learn more about GitHub Codespaces, as it is the user's responsibility to maintain and delete codespaces.
