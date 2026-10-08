@@ -18,6 +18,7 @@ except ImportError:
     # Skip all tests in this file - pytest checks reference solutions and that won't work without these imports
     pytestmark = mark.skip("No importnb/reference file available")
 
+log_message = ""
 
 def problem(fun):
     test_name = "test_" + fun.__name__
@@ -30,6 +31,8 @@ def problem(fun):
             test_func(fun)
         except Exception as e:
             print("Incorrect")
+            if log_message != "":
+                print(log_message)
             print(e)
         else:
             print("Correct!")
@@ -119,13 +122,14 @@ def prepare_alpha_beta_state(reg: Qubits, alpha: complex, beta: complex) -> None
 
 
 def test_state_selection_partial_meas(solution = ref.state_selection_partial_meas if ref_available else None):
+    global log_message
     for angle_ind in range(5):
         for phase_ind in range(5):
             theta = pi * angle_ind / 5
             phi = pi * phase_ind / 5
             alpha, beta = cos(theta / 2), exp(1j * phi) * sin(theta / 2)
             prepare_current_state = partial(prepare_alpha_beta_state, alpha=alpha, beta=beta)
-            print(f'Testing {alpha=:.3f}, {beta=:.3f}')
+            log_message = f'Testing {alpha=:.3f}, {beta=:.3f}'
             for input_ind in range(2):
                 solution_input_ind = partial(solution, ind=input_ind)
                 expected_vector = [beta, alpha] if input_ind else [alpha, beta]

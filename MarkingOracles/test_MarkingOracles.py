@@ -19,6 +19,8 @@ except ImportError as e:
 # Run pytest in the folder to run all the tests on reference solutions 
 # from the respective file instead of solutions in the Jupyter Notebook.
 
+log_message = ""
+
 # "problem" decorator: specifies that executing this cell tests this function using a test with a fixed name
 def problem(fun):
     try:
@@ -34,6 +36,8 @@ def problem(fun):
             test_func(fun)
         except Exception as e:
             print("Incorrect")
+            if log_message != "":
+                print(log_message)
             print(str(e))
         else:
             print("Correct!")
@@ -111,9 +115,10 @@ def f_kth_bit(args: list[bool], k: int) -> bool:
 
 
 def test_oracle_kth_bit(fun=ref.oracle_kth_bit if ref_available else None):
+    global log_message
     for n in range(1, 5):
         for k in range(n):
-            print(f"Testing {n=}, {k=}")
+            log_message = f"Testing {n=}, {k=}"
             f = partial(f_kth_bit, k=k)
             quantum_op = partial(fun, k=k)
             run_test_reversible(n, n + 1, quantum_op, f)
@@ -126,8 +131,9 @@ def f_parity(args: list[bool]) -> bool:
 
 
 def test_oracle_parity(fun=ref.oracle_parity if ref_available else None):
+    global log_message
     for n in range(1, 5):
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         run_test_reversible(n, n + 1, fun, f_parity)
 
 
@@ -138,10 +144,11 @@ def f_product(args: list[bool], r: list[bool]) -> bool:
 
 
 def test_oracle_product(fun=ref.oracle_product if ref_available else None):
+    global log_message
     for n in range(2, 5):
         for mask in range(2 ** n):
             r = int_to_bool_array(mask, n)
-            print(f"Testing {n=}, {r=}")
+            log_message = f"Testing {n=}, {r=}"
             f = partial(f_product, r=r)
             quantum_op = partial(fun, r=r)
             run_test_reversible(n, n + 1, quantum_op, f)
@@ -154,10 +161,11 @@ def f_product_negation(args: list[bool], r: list[bool]) -> bool:
 
 
 def test_oracle_product_negation(fun=ref.oracle_product_negation if ref_available else None):
+    global log_message
     for n in range(2, 5):
         for mask in range(2 ** n):
             r = int_to_bool_array(mask, n)
-            print(f"Testing {n=}, {r=}")
+            log_message = f"Testing {n=}, {r=}"
             f = partial(f_product_negation, r=r)
             quantum_op = partial(fun, r=r)
             run_test_reversible(n, n + 1, quantum_op, f)
@@ -170,8 +178,9 @@ def f_palindrome(args: list[bool]) -> bool:
 
 
 def test_oracle_palindrome(fun=ref.oracle_palindrome if ref_available else None):
+    global log_message
     for n in range(2, 7):
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         run_test_reversible(n, n + 1, fun, f_palindrome)
 
 
@@ -183,9 +192,10 @@ def f_periodic_p(args: list[bool], p: int) -> bool:
 
 
 def test_oracle_periodic_p(fun=ref.oracle_periodic_p if ref_available else None):
+    global log_message
     for n in range(1, 5):
         for p in range(1, n):
-            print(f"Testing {n=}, {p=}")
+            log_message = f"Testing {n=}, {p=}"
             f = partial(f_periodic_p, p=p)
             quantum_op = partial(fun, p=p)
             run_test_reversible(n, n + 1, quantum_op, f)
@@ -202,8 +212,9 @@ def f_periodic(args: list[bool]) -> bool:
 
 
 def test_oracle_periodic(fun=ref.oracle_periodic if ref_available else None):
+    global log_message
     for n in range(2, 6):
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         run_test_reversible(n, 2 * n + 1, fun, f_periodic)
 
 
@@ -214,13 +225,14 @@ def f_contains_substring_at_p(args: list[bool], pattern: list[bool], p: int) -> 
 
 
 def test_oracle_contains_substring_at_p(fun=ref.oracle_contains_substring_at_p if ref_available else None):
+    global log_message
     for (n, p, pattern) in [
         (2, 1, [True]),
         (3, 0, [False, True]),
         (4, 1, [True, True, False]),
         (5, 3, [False])
     ]:
-        print(f"Testing {n=}, {pattern=}, {p=}")
+        log_message = f"Testing {n=}, {pattern=}, {p=}"
         f = partial(f_contains_substring_at_p, pattern=pattern, p=p)
         quantum_op = partial(fun, pattern=pattern, p=p)
         run_test_reversible(n, n + 1, quantum_op, f)
@@ -233,13 +245,14 @@ def f_pattern_matching(args: list[bool], indices: list[int], pattern: list[bool]
 
 
 def test_oracle_pattern_matching(fun=ref.oracle_pattern_matching if ref_available else None):
+    global log_message
     for (n, indices, pattern) in [
         (2, [1], [True]),
         (3, [0, 2], [False, True]),
         (4, [1, 3], [True, False]),
         (5, [0, 1, 4], [True, True, False])
     ]:
-        print(f"Testing {n=}, {indices=}, {pattern=}")
+        log_message = f"Testing {n=}, {indices=}, {pattern=}"
         f = partial(f_pattern_matching, indices=indices, pattern=pattern)
         quantum_op = partial(fun, indices=indices, pattern=pattern)
         run_test_reversible(n, n + 1, quantum_op, f)
@@ -255,13 +268,14 @@ def f_contains_substring(args: list[bool], pattern: list[bool]) -> bool:
 
 
 def test_oracle_contains_substring(fun=ref.oracle_contains_substring if ref_available else None):
+    global log_message
     for (n, pattern) in [
         (2, [True]),
         (3, [False, True]),
         (4, [True, True, False]),
         (5, [False])
     ]:
-        print(f"Testing {n=}, {pattern=}")
+        log_message = f"Testing {n=}, {pattern=}"
         f = partial(f_contains_substring, pattern=pattern)
         quantum_op = partial(fun, pattern=pattern)
         run_test_reversible(n, 2 * n + 1, quantum_op, f)
@@ -274,8 +288,9 @@ def f_balanced(args: list[bool]) -> bool:
 
 
 def test_oracle_balanced(fun=ref.oracle_balanced if ref_available else None):
+    global log_message
     for n in range(2, 7, 2):
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         run_test_reversible(n, 2 * n + 1, fun, f_balanced)
 
 
@@ -286,8 +301,9 @@ def f_majority(args: list[bool]) -> bool:
 
 
 def test_oracle_majority(fun=ref.oracle_majority if ref_available else None):
+    global log_message
     for n in [3, 5, 7]:
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         run_test_reversible(n, 2 * n + 1, fun, f_majority)
 
 
@@ -298,8 +314,9 @@ def f_bit_sum_divisible_by_three(args: list[bool]) -> bool:
 
 
 def test_oracle_bit_sum_divisible_by_three(fun=ref.oracle_bit_sum_divisible_by_three if ref_available else None):
+    global log_message
     for n in range(2, 6):
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         run_test_reversible(n, 2 * n + 1, fun, f_bit_sum_divisible_by_three)
 
 
@@ -310,6 +327,7 @@ def f_number_divisible_by_three(args: list[bool]) -> bool:
 
 
 def test_oracle_number_divisible_by_three(fun=ref.oracle_number_divisible_by_three if ref_available else None):
+    global log_message
     for n in range(2, 6):
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         run_test_reversible(n, 2 * n + 1, fun, f_number_divisible_by_three)

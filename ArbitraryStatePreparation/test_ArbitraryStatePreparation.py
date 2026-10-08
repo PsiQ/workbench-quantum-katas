@@ -105,8 +105,8 @@ one_qubit_states = [
 
 @mark.parametrize("fun", [ref.prepare_one_qubit_state] if ref_available else [])
 def test_prepare_one_qubit_state(fun):
+    global log_message
     for alpha, beta in one_qubit_states:
-        global log_message
         log_message = f"Testing {alpha=}, {beta=}"
         fun_alpha_beta = partial(fun, alpha=alpha, beta=beta)
         check_state_vector(fun_alpha_beta, 1, [alpha, beta])
@@ -116,10 +116,10 @@ def test_prepare_one_qubit_state(fun):
 
 @mark.parametrize("fun", [ref.prepare_conditional_state] if ref_available else [])
 def test_prepare_conditional_state(fun):
+    global log_message
     for second_qubit_state in one_qubit_states:
         for alpha, beta in one_qubit_states:
             for c in [0, 1]:
-                global log_message
                 log_message = f"Testing |ψ⟩ = {second_qubit_state[0]}⋅|0⟩ + {second_qubit_state[1]}⋅|1⟩, {alpha=}, {beta=}, {c=}"
                 fun_alpha_beta = partial(fun, alpha=alpha, beta=beta, c=c)
                 initial_vector = [second_qubit_state[0], 0, second_qubit_state[1], 0]
@@ -132,6 +132,7 @@ def test_prepare_conditional_state(fun):
 
 @mark.parametrize("fun", [ref.prepare_three_basis_states_two_qubits] if ref_available else [])
 def test_prepare_three_basis_states_two_qubits(fun):
+    global log_message
     for a in [
         [1, 0, 0],
         [0, 1, 0],
@@ -145,7 +146,6 @@ def test_prepare_three_basis_states_two_qubits(fun):
         [0, -1/sqrt(2), 1/sqrt(2)],
         [-1/sqrt(6), -1/sqrt(2), -1/sqrt(3)],
     ]:
-        global log_message
         log_message = f"Testing {a=}"
         fun_a = partial(fun, a=a)
         expected_vector = a + [0]
@@ -178,8 +178,8 @@ two_qubit_states = [
 
 @mark.parametrize("fun", [ref.prepare_two_qubit_state] if ref_available else [])
 def test_prepare_two_qubit_state(fun):
+    global log_message
     for a in two_qubit_states:
-        global log_message
         log_message = f"Testing {a=}"
         fun_a = partial(fun, a=a)
         check_state_vector(fun_a, 2, a)
@@ -189,6 +189,7 @@ def test_prepare_two_qubit_state(fun):
 
 @mark.parametrize("qbk_class", [ref.NaiveStatePrep] if ref_available else [])
 def test_naivestateprep(qbk_class):
+    global log_message
     # Reuse one- and two-qubit test cases
     tests = list(product([1], one_qubit_states)) + list(product([2], two_qubit_states))
 
@@ -202,7 +203,6 @@ def test_naivestateprep(qbk_class):
             tests.append((n, a))
     
     for n, a in tests:
-        global log_message
         log_message = f"Testing {a=}"
         qbk = qbk_class()
         fun_a = partial(qbk.compute, a=a)

@@ -19,6 +19,8 @@ except ImportError as e:
 # Run pytest in the folder to run all the tests on reference solutions 
 # from the respective file instead of solutions in the Jupyter Notebook.
 
+log_message = ""
+
 # "problem" decorator: specifies that executing this cell tests this function using a test with a fixed name
 def problem(fun):
     try:
@@ -34,6 +36,8 @@ def problem(fun):
             test_func(fun)
         except Exception as e:
             print("Incorrect")
+            if log_message != "":
+                print(log_message)
             print(str(e))
         else:
             print("Correct!")
@@ -111,8 +115,9 @@ def f_and(args: list[bool]) -> bool:
 
 
 def test_oracle_and(fun=ref.oracle_and if ref_available else None):
+    global log_message
     for n in range(1, 5):
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         run_test_reversible(n, n + 1, fun, f_and)
 
 
@@ -123,8 +128,9 @@ def f_or(args: list[bool]) -> bool:
 
 
 def test_oracle_or(fun=ref.oracle_or if ref_available else None):
+    global log_message
     for n in range(1, 5):
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         run_test_reversible(n, n + 1, fun, f_or)
 
 
@@ -137,6 +143,7 @@ def f_sat_clause(args: list[bool], literals: list[tuple[int, bool]]) -> bool:
     return False
 
 def test_oracle_sat_clause(fun=ref.oracle_sat_clause if ref_available else None):
+    global log_message
     for num_inputs, literals in [
         (1, [(0, True)]),
         (1, [(0, False)]),
@@ -145,7 +152,7 @@ def test_oracle_sat_clause(fun=ref.oracle_sat_clause if ref_available else None)
         (3, [(1, False), (2, False)]),
         (3, [(1, False), (2, False), (0, True)])
     ]:
-        print(f"Testing {num_inputs=}, {literals=}")
+        log_message = f"Testing {num_inputs=}, {literals=}"
         f = partial(f_sat_clause, literals=literals)
         quantum_op = partial(fun, literals=literals)
         run_test_reversible(num_inputs, num_inputs + 1, quantum_op, f)
@@ -161,6 +168,7 @@ def f_sat_formula(args: list[bool], clauses: list[list[tuple[int, bool]]]) -> bo
 
 
 def test_oracle_sat_formula(fun=ref.oracle_sat_formula if ref_available else None):
+    global log_message
     for num_inputs, clauses in [
             (1, [[(0, True)], [(0, False)]]), # 0 solutions
             (1, [[(0, False)]]),              # 1 solution
@@ -169,7 +177,7 @@ def test_oracle_sat_formula(fun=ref.oracle_sat_formula if ref_available else Non
             (2, [[(0, False), (1, False)]]),  # 3 solutions
             (3, [[(2, False), (1, True)], [(2, True), (1, False)]]), # 4 solutions
         ]:
-        print(f"Testing {num_inputs=}, {clauses=}")
+        log_message = f"Testing {num_inputs=}, {clauses=}"
         f = partial(f_sat_formula, clauses=clauses)
         quantum_op = partial(fun, clauses=clauses)
         run_test_reversible(num_inputs, num_inputs + len(clauses) + 1, quantum_op, f)
@@ -196,13 +204,14 @@ def f_exactly1one_sat_clause(args: list[bool], literals: list[tuple[int, bool]])
 
 
 def test_oracle_exactly1one_sat_clause(fun=ref.oracle_exactly1one_sat_clause if ref_available else None):
+    global log_message
     for num_inputs, literals in [
         (3, [(0, True), (1, True), (2, False)]),
         (3, [(1, False), (2, False), (0, True)]),
         (4, [(3, True), (1, False), (2, True)]),
         (4, [(0, False), (2, True), (3, False)])
     ]:
-        print(f"Testing {num_inputs=}, {literals=}")
+        log_message = f"Testing {num_inputs=}, {literals=}"
         f = partial(f_exactly1one_sat_clause, literals=literals)
         quantum_op = partial(fun, literals=literals)
         run_test_reversible(num_inputs, num_inputs + 4, quantum_op, f)
@@ -218,13 +227,14 @@ def f_exactly1one_sat_formula(args: list[bool], clauses: list[list[tuple[int, bo
 
 
 def test_oracle_exactly1one_sat_formula(fun=ref.oracle_exactly1one_sat_formula if ref_available else None):
+    global log_message
     for num_inputs, clauses in [
             (3, [[(0, True), (1, True), (2, True)],  [(0, False), (1, True), (2, True)]]),    # 0 solutions
             (3, [[(0, True), (1, True), (2, False)], [(0, True), (1, False), (2, True)], [(0, False), (1, True), (2, True)]]), # 1 solutions
             (3, [[(0, True), (1, True), (2, False)], [(0, False), (1, True), (2, True)]]),    # 2 solutions
             (3, [[(0, False), (1, False), (2, False)]])                                       # 3 solutions
         ]:
-        print(f"Testing {num_inputs=}, {clauses=}")
+        log_message = f"Testing {num_inputs=}, {clauses=}"
         f = partial(f_exactly1one_sat_formula, clauses=clauses)
         quantum_op = partial(fun, clauses=clauses)
         run_test_reversible(num_inputs, num_inputs + len(clauses) + 4, quantum_op, f)

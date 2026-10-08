@@ -20,6 +20,8 @@ except ImportError as e:
 # Run pytest in the folder to run all the tests on reference solutions 
 # from the respective file instead of solutions in the Jupyter Notebook.
 
+log_message = ""
+
 # "problem" decorator: specifies that executing this cell tests this function using a test with a fixed name
 def problem(fun):
     try:
@@ -35,6 +37,8 @@ def problem(fun):
             test_func(fun)
         except Exception as e:
             print("Incorrect")
+            if log_message != "":
+                print(log_message)
             print(str(e))
         else:
             print("Correct!")
@@ -44,11 +48,12 @@ def problem(fun):
 ####################################################################################################
 
 def test_find_period_classical(fun=ref.find_period_classical if ref_available else None):
+    global log_message
     for n in range(15, 26):
         for a in range(2, n):
             if gcd(n, a) > 1:
                 continue
-            print(f"Testing {n=}, {a=}")
+            log_message = f"Testing {n=}, {a=}"
             p_sol = fun(n, a)
             for p in range(1, p_sol):
                 a_x = (a ** p) % n
@@ -128,8 +133,9 @@ def f_multiply_by_2k_mod_15(x: int, k: int) -> int:
 
 
 def test_multiply_by_2k_mod_15(fun=ref.multiply_by_2k_mod_15 if ref_available else None):
+    global log_message
     for k in range(16):
-        print(f"Testing {k=}")
+        log_message = f"Testing {k=}"
         fun_k = partial(fun, k=k)
         f_k = partial(f_multiply_by_2k_mod_15, k=k)
         run_test_reversible_inplace(4, fun_k, f_k)
