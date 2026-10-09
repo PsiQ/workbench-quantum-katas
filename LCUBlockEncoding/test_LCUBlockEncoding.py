@@ -71,11 +71,11 @@ def check_state_vector(
 
 @mark.parametrize("qbk_class", [ref.OneQubitPrepare] if ref_available else [])
 def test_onequbitprepare(qbk_class):
+    global log_message
     seed(42)
 
     for _ in range(10):
         alpha = [uniform(0, 2), uniform(0, 2)]
-        global log_message
         log_message = f"Testing {alpha=}"
         qbk = qbk_class()
         fun_alpha = partial(qbk.compute, alpha=alpha)
@@ -144,6 +144,7 @@ def print_highlighted_matrix(matrix: list[list[float]], block_size: int, header:
 
 @mark.parametrize("fun", [ref.lcu_decomposition] if ref_available else [])
 def test_lcu_decomposition(fun):
+    global log_message
     seed(42)
 
     for _ in range(10):
@@ -153,7 +154,6 @@ def test_lcu_decomposition(fun):
         beta.append(alpha[0] - alpha[1] + alpha[2] - alpha[3])
         beta.append(alpha[0] + alpha[1] - alpha[2] - alpha[3])
         beta.append(alpha[0] - alpha[1] - alpha[2] + alpha[3])
-        global log_message
         log_message = f"Testing {beta=}"
 
         alpha_res = fun(beta)
@@ -168,11 +168,11 @@ Expected values:
 
 @mark.parametrize("qbk_class", [ref.TwoQubitPrepare] if ref_available else [])
 def test_twoqubitprepare(qbk_class):
+    global log_message
     seed(42)
 
     for _ in range(10):
         alpha = [uniform(0, 2) for _ in range(4)]
-        global log_message
         log_message = f"Testing {alpha=}"
         qbk = qbk_class()
         fun_alpha = partial(qbk.compute, alpha=alpha)

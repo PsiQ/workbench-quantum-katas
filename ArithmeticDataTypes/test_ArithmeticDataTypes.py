@@ -118,8 +118,8 @@ def f_increment(a: int, n: int) -> int:
 
 @mark.parametrize("quantum_op", [ref.increment_1, ref.increment] if ref_available else [])
 def test_increment(quantum_op):
+    global log_message
     for n in range(1, 5):
-        global log_message
         log_message = f"Testing {n=}"
         f = partial(f_increment, n=n)
         run_test_reversible(n, 0, QUInt, quantum_op, f)
@@ -133,9 +133,9 @@ def f_increment_power(a: int, n: int, p: int) -> int:
 
 @mark.parametrize("quantum_op", [ref.increment_power] if ref_available else [])
 def test_increment_power(quantum_op):
+    global log_message
     for n in range(1, 5):
         for p in range(n):
-            global log_message
             log_message = f"Testing {n=}, {p=}"
             f = partial(f_increment_power, n=n, p=p)
             q = partial(quantum_op, p=p)
@@ -150,9 +150,9 @@ def f_add(a: int, b: int, n: int) -> int:
 
 @mark.parametrize("quantum_op", [ref.increment_constant] if ref_available else [])
 def test_increment_constant(quantum_op):
+    global log_message
     for n in range(1, 5):
         for b in range(2 ** n):
-            global log_message
             log_message = f"Testing {n=}, {b=}"
             f = partial(f_add, n=n, b=b)
             q = partial(quantum_op, b=b)
@@ -163,9 +163,9 @@ def test_increment_constant(quantum_op):
 
 @mark.parametrize("qbk_class", [ref.NaiveAdd] if ref_available else [])
 def test_naiveadd(qbk_class):
+    global log_message
     for n in range(1, 5):
         for m in range(1, n):
-            global log_message
             log_message = f"Testing {n=}, {m=}"
             f = partial(f_add, n=n)
             qbk = qbk_class()
@@ -180,9 +180,9 @@ def f_subtract(a: int, b: int, n: int) -> int:
 
 @mark.parametrize("qbk_class", [ref.NaiveSubtract] if ref_available else [])
 def test_naivesubtract(qbk_class):
+    global log_message
     for n in range(1, 5):
         for m in range(1, n + 1):
-            global log_message
             log_message = f"Testing {n=}, {m=}"
             f = partial(f_subtract, n=n)
             qbk = qbk_class()
@@ -197,8 +197,8 @@ def f_negate(a: int, n: int) -> int:
 
 @mark.parametrize("quantum_op", [ref.negate] if ref_available else [])
 def test_negate(quantum_op):
+    global log_message
     for n in range(2, 5):
-        global log_message
         log_message = f"Testing {n=}"
         f = partial(f_negate, n=n)
         run_test_reversible(n, 0, QInt, quantum_op, f)
@@ -217,8 +217,8 @@ def f_add_signed(a: int, b: int, n: int) -> int:
 
 @mark.parametrize("qbk_class", [ref.NaiveAddSigned] if ref_available else [])
 def test_naiveaddsigned(qbk_class):
+    global log_message
     for n in range(2, 5):
-        global log_message
         log_message = f"Testing {n=}"
         f = partial(f_add_signed, n=n)
         qbk = qbk_class()
@@ -229,9 +229,9 @@ def test_naiveaddsigned(qbk_class):
 
 @mark.parametrize("qbk_class", [ref.NaiveAddSignedExtension] if ref_available else [])
 def test_naiveaddsignedextension(qbk_class):
+    global log_message
     for n in range(2, 5):
         for m in range(2, n + 1):
-            global log_message
             log_message = f"Testing {n=}, {m=}"
             f = partial(f_add_signed, n=n)
             qbk = qbk_class()

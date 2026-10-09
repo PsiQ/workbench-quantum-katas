@@ -30,6 +30,8 @@ except ImportError as e:
 # Run pytest in the folder to run all the tests on reference solutions 
 # from the respective file instead of solutions in the Jupyter Notebook.
 
+log_message = ""
+
 # "problem" decorator: specifies that executing this cell tests this function using a test with a fixed name
 def problem(fun):
     try:
@@ -45,6 +47,8 @@ def problem(fun):
             test_func(fun)
         except Exception as e:
             print("Incorrect")
+            if log_message != "":
+                print(log_message)
             print(str(e))
         else:
             print("Correct!")
@@ -100,8 +104,9 @@ pauli_z = Pauli("Z", np.array([[1, 0], [0, -1]]), False, True)
 
 @mark.parametrize("fun", [ref.single_qubit_ppr_1, ref.single_qubit_ppr_2] if ref_available else [])
 def test_single_qubit_ppr(fun):
+    global log_message
     for pauli in [pauli_x, pauli_y, pauli_z]:
-        print(f"Testing Pauli {pauli.name}...")
+        log_message = f"Testing Pauli {pauli.name}..."
         for theta in range(5):
             expected_matrix = expm(1j * theta * pauli.matrix)
             fun_args = partial(fun, theta=theta, is_x=pauli.is_x, is_z=pauli.is_z)
@@ -110,11 +115,12 @@ def test_single_qubit_ppr(fun):
 ####################################################################################################
 
 def test_two_qubit_ppr(fun=ref.two_qubit_ppr if ref_available else None):
+    global log_message
     for pauli0 in [pauli_i, pauli_x, pauli_y, pauli_z]:
         for pauli1 in [pauli_i, pauli_x, pauli_y, pauli_z]:
             if pauli0.name == "I" and pauli1.name == "I":
                 continue
-            print(f"Testing P0 = {pauli0.name}, P1 = {pauli1.name}...")
+            log_message = f"Testing P0 = {pauli0.name}, P1 = {pauli1.name}..."
             tensor = np.kron(pauli1.matrix, pauli0.matrix)
             for theta in range(5):
                 expected_matrix = expm(1j * theta * tensor)

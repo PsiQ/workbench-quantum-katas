@@ -20,6 +20,8 @@ except ImportError as e:
 # Run pytest in the folder to run all the tests on reference solutions 
 # from the respective file instead of solutions in the Jupyter Notebook.
 
+log_message = ""
+
 # "problem" decorator: specifies that executing this cell tests this function using a test with a fixed name
 def problem(fun):
     try:
@@ -35,6 +37,8 @@ def problem(fun):
             test_func(fun)
         except Exception as e:
             print("Incorrect")
+            if log_message != "":
+                print(log_message)
             print(str(e))
         else:
             print("Correct!")
@@ -84,8 +88,9 @@ def test_single_qubit_qft(fun=ref.single_qubit_qft if ref_available else None):
 ####################################################################################################
 
 def test_rotation_gate(fun=ref.rotation_gate if ref_available else None):
+    global log_message
     for k in range(5):
-        print(f"Testing {k=}")
+        log_message = f"Testing {k=}"
         expected_matrix = [[1, 0],
                            [0, exp(2j * pi / (2 ** k))]]
         fun_k = partial(fun, k=k)
@@ -95,12 +100,13 @@ def test_rotation_gate(fun=ref.rotation_gate if ref_available else None):
 ####################################################################################################
 
 def test_binary_fraction_exponent_classical(fun=ref.binary_fraction_exponent_classical if ref_available else None):
+    global log_message
     for n in range(1, 5):
         for j_int in range(2 ** n):
             expected_matrix = [[1, 0],
                                [0, exp(2j * pi * j_int / (2 ** n))]]
             j_bits = [(j_int & (1 << ind)) > 0 for ind in range(n)]
-            print(f"Testing {n=}, j={j_bits} (int {j_int})")
+            log_message = f"Testing {n=}, j={j_bits} (int {j_int})"
             fun_j = partial(fun, j=j_bits)
             check_unitary_matrix(1, fun_j, expected_matrix)
 
@@ -108,6 +114,7 @@ def test_binary_fraction_exponent_classical(fun=ref.binary_fraction_exponent_cla
 ####################################################################################################
 
 def test_binary_fraction_exponent_quantum(fun=ref.binary_fraction_exponent_quantum if ref_available else None):
+    global log_message
     def fun_wrapper(reg: Qubits) -> None:
         '''Wrapper to split one Qubits argument into two and call the solution with it.'''
         x = reg[0]
@@ -115,7 +122,7 @@ def test_binary_fraction_exponent_quantum(fun=ref.binary_fraction_exponent_quant
         fun(x, j)
 
     for n in range(1, 5):
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         expected_matrix = [[0] * 2 ** (n + 1) for _ in range(2 ** (n + 1))]
         for ind in range(2 ** (n + 1)):
             if ind % 2 == 0:
@@ -130,8 +137,9 @@ def test_binary_fraction_exponent_quantum(fun=ref.binary_fraction_exponent_quant
 ####################################################################################################
 
 def test_binary_fraction_exponent_inplace(fun=ref.binary_fraction_exponent_inplace if ref_available else None):
+    global log_message
     for n in range(1, 5):
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         expected_matrix = [[0] * 2 ** n for _ in range(2 ** n)]
         for ind in range(2 ** n):
             ind_lsb = ind % (2 ** (n - 1))
@@ -143,8 +151,9 @@ def test_binary_fraction_exponent_inplace(fun=ref.binary_fraction_exponent_inpla
 ####################################################################################################
 
 def test_quantum_fourier_transform(fun=ref.quantum_fourier_transform if ref_available else None):
+    global log_message
     for n in range(1, 5):
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         expected_matrix = [[0] * 2 ** n for _ in range(2 ** n)]
         # Matrix from direct definition of QFT, not the task description (equivalent)
         for ind in range(2 ** n):
@@ -172,8 +181,9 @@ Expected state:
 
 
 def test_prepare_equal_superposition(fun=ref.prepare_equal_superposition if ref_available else None):
+    global log_message
     for n in range(1, 5):
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         expected_state = [1 / sqrt(2 ** n) for _ in range(2 ** n)]
         run_stateprep_test(n, fun, expected_state)
 
@@ -181,9 +191,10 @@ def test_prepare_equal_superposition(fun=ref.prepare_equal_superposition if ref_
 ####################################################################################################
 
 def test_prepare_periodic_state(fun=ref.prepare_periodic_state if ref_available else None):
+    global log_message
     for n in range(1, 5):
         for freq in range(2 ** n):
-            print(f"Testing {n=}, {freq=}")
+            log_message = f"Testing {n=}, {freq=}"
             expected_state = [exp(2j * pi * k * freq / 2 ** n) / sqrt(2 ** n) for k in range(2 ** n)]
             fun_freq = partial(fun, freq=freq)
             run_stateprep_test(n, fun_freq, expected_state)
@@ -192,8 +203,9 @@ def test_prepare_periodic_state(fun=ref.prepare_periodic_state if ref_available 
 ####################################################################################################
 
 def test_prepare_alternating_amplitudes_state(fun=ref.prepare_alternating_amplitudes_state if ref_available else None):
+    global log_message
     for n in range(1, 5):
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         expected_state = [(1 if k % 2 == 0 else -1) / sqrt(2 ** n) for k in range(2 ** n)]
         run_stateprep_test(n, fun, expected_state)
 
@@ -201,8 +213,9 @@ def test_prepare_alternating_amplitudes_state(fun=ref.prepare_alternating_amplit
 ####################################################################################################
 
 def test_prepare_equal_superposition_even_states(fun=ref.prepare_equal_superposition_even_states if ref_available else None):
+    global log_message
     for n in range(1, 5):
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         expected_state = [(1 if k % 2 == 0 else 0) / sqrt(2 ** (n - 1)) for k in range(2 ** n)]
         run_stateprep_test(n, fun, expected_state)
 
@@ -210,8 +223,9 @@ def test_prepare_equal_superposition_even_states(fun=ref.prepare_equal_superposi
 ####################################################################################################
 
 def test_prepare_square_wave(fun=ref.prepare_square_wave if ref_available else None):
+    global log_message
     for n in range(2, 5):
-        print(f"Testing {n=}")
+        log_message = f"Testing {n=}"
         expected_state = [(1 if k % 4 < 2 else -1) / sqrt(2 ** n) for k in range(2 ** n)]
         run_stateprep_test(n, fun, expected_state)
 

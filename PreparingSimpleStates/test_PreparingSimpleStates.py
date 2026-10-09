@@ -17,6 +17,7 @@ except ImportError:
     # Skip all tests in this file - pytest checks reference solutions and that won't work without these imports
     pytestmark = mark.skip("No importnb/reference file available")
 
+log_message = ""
 
 def problem(fun):
     test_name = "test_" + fun.__name__
@@ -29,6 +30,8 @@ def problem(fun):
             test_func(fun)
         except Exception as e:
             print("Incorrect")
+            if log_message != "":
+                print(log_message)
             print(e)
         else:
             print("Correct!")
@@ -124,9 +127,10 @@ def test_prepare_all_n_qubits(fun=ref.prepare_all_n_qubits if ref_available else
 
 
 def test_prepare_even_odd_numbers(fun=ref.prepare_even_odd_numbers if ref_available else None):
+    global log_message
     for n in range(1, 6):
         for even in [True, False]:
-            print(f"Testing {n=}, {even=}")
+            log_message = f"Testing {n=}, {even=}"
             expected_vector = ([isq2 ** (n - 1), 0] if even else [0, isq2 ** (n - 1),]) * (2 ** (n - 1))
             fun_even = partial(fun, even=even)
             check_state_vector(fun_even, n, expected_vector)
@@ -137,6 +141,7 @@ def bitstring_as_int(bits):
 
 
 def test_prepare_zero_and_bitstring(fun=ref.prepare_zero_and_bitstring if ref_available else None):
+    global log_message
     tests = [
         [True],
         [True, False],
@@ -148,7 +153,7 @@ def test_prepare_zero_and_bitstring(fun=ref.prepare_zero_and_bitstring if ref_av
     ]
     for bits in tests:
         n = len(bits)
-        print(f"Testing {n=}, {bits=}")
+        log_message = f"Testing {n=}, {bits=}"
         expected_vector = [0] * (2 ** n)
         ind = bitstring_as_int(bits)
         expected_vector[0] = expected_vector[ind] = isq2
@@ -157,6 +162,7 @@ def test_prepare_zero_and_bitstring(fun=ref.prepare_zero_and_bitstring if ref_av
 
 
 def test_prepare_two_bitstrings(fun=ref.prepare_two_bitstrings if ref_available else None):
+    global log_message
     tests1 = [
         [False],
         [True],
@@ -178,7 +184,7 @@ def test_prepare_two_bitstrings(fun=ref.prepare_two_bitstrings if ref_available 
 
     for bits1, bits2 in zip(tests1, tests2):
         n = len(bits1)
-        print(f"Testing {n=}, {bits1=}, {bits2=}")
+        log_message = f"Testing {n=}, {bits1=}, {bits2=}"
         expected_vector = [0] * (2 ** n)
         ind1 = bitstring_as_int(bits1)
         ind2 = bitstring_as_int(bits2)
@@ -188,6 +194,7 @@ def test_prepare_two_bitstrings(fun=ref.prepare_two_bitstrings if ref_available 
 
 
 def test_prepare_four_bitstrings(fun=ref.prepare_four_bitstrings if ref_available else None):
+    global log_message
     tests = [
         [[False, False], [False, True], [True, False], [True, True]],
         [[False, True, False], [True, False, False], [False, False, True], [True, True, False]],
@@ -197,7 +204,7 @@ def test_prepare_four_bitstrings(fun=ref.prepare_four_bitstrings if ref_availabl
 
     for bits in tests:
         n = len(bits[0])
-        print(f"Testing {n=}, {bits=}")
+        log_message = f"Testing {n=}, {bits=}"
         expected_vector = [0] * (2 ** n)
         for bits_ind in range(4):
             ind = bitstring_as_int(bits[bits_ind])
@@ -208,9 +215,10 @@ def test_prepare_four_bitstrings(fun=ref.prepare_four_bitstrings if ref_availabl
 
 @mark.parametrize("fun", [ref.prepare_given_parity_1, ref.prepare_given_parity_2, ref.prepare_given_parity_3] if ref_available else [])
 def test_prepare_given_parity(fun):
+    global log_message
     for n in range(2, 7):
         for parity in [0, 1]:
-            print(f'Testing {n=}, {parity=}')
+            log_message = f'Testing {n=}, {parity=}'
             amp = 1 / sqrt(2) ** (n - 1)
             expected_vector = [amp if i.bit_count() % 2 == parity else 0 for i in range(2 ** n)]
             fun_parity = partial(fun, parity=parity)
@@ -218,9 +226,10 @@ def test_prepare_given_parity(fun):
 
 
 def test_prepare_uneven_single_qubit(fun=ref.prepare_uneven_single_qubit if ref_available else None):
+    global log_message
     for alpha_ind in range(10):
         alpha = pi*alpha_ind/10
-        print(f'{alpha=:.4f}')
+        log_message = f'{alpha=:.4f}'
         expected_vector = [cos(alpha), sin(alpha)]
         fun_with_alpha = partial(fun, alpha=alpha)
         check_state_vector(fun_with_alpha, 1, expected_vector)
@@ -249,9 +258,10 @@ def test_prepare_hardy_state(fun=ref.prepare_hardy_state if ref_available else N
 
 @mark.parametrize("fun", [ref.prepare_wstate_power_of_two_1, ref.prepare_wstate_power_of_two_2] if ref_available else [])
 def test_prepare_wstate_power_of_two(fun):
+    global log_message
     for k in range(4):
         n = 2 ** k
-        print(f'Testing {n=}')
+        log_message = f'Testing {n=}'
         expected_vector = [0] * 2 ** n
         for ind in range(n):
             expected_vector[2 ** ind] = 1 / sqrt(n)
@@ -260,8 +270,9 @@ def test_prepare_wstate_power_of_two(fun):
 
 @mark.parametrize("fun", [ref.prepare_wstate_1, ref.prepare_wstate_2, ref.prepare_wstate_3] if ref_available else [])
 def test_prepare_wstate(fun):
+    global log_message
     for n in range(1, 10):
-        print(f'Testing {n=}')
+        log_message = f'Testing {n=}'
 
         expected_vector = [0] * 2 ** n
         for ind in range(n):

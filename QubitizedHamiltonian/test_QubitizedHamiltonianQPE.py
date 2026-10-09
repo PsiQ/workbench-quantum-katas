@@ -115,6 +115,7 @@ def check_data_loader(
 
 @mark.parametrize("qbk_class", [ref.DataLoader] if ref_available else [])
 def test_dataloader(qbk_class):
+    global log_message
     for data in [
         [1, 2, 3],
         [4, 0, 2, 1],
@@ -122,7 +123,6 @@ def test_dataloader(qbk_class):
         [3],
         [1, 0]
     ]:
-        global log_message
         log_message = f"Testing loading {data=}"
         check_data_loader(qbk_class, data)
 
@@ -176,9 +176,9 @@ def check_adder(
 
 @mark.parametrize("qbk_class", [ref.Adder] if ref_available else [])
 def test_adder(qbk_class):
+    global log_message
     for n in range(1, 5):
         for m in range(1, n):
-            global log_message
             log_message = f"Testing {n=}, {m=}"
             check_adder(n, m, qbk_class)
 
@@ -322,8 +322,8 @@ def test_get_adder_optimize_av_highwater(get_adder):
 
 @mark.parametrize("qbk_class", [ref.MockedRoutine] if ref_available else [])
 def test_mockedroutine(qbk_class):
+    global log_message
     for N in [8, 64, 1024]:
-        global log_message
         log_message = f"Testing N={N}"
 
         qpu = QPU(num_qubits=64, filters=[">>buffer>>"])

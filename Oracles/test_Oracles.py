@@ -25,6 +25,8 @@ except ImportError as e:
 # Run pytest in the folder to run all the tests on reference solutions 
 # from the respective file instead of solutions in the Jupyter Notebook.
 
+log_message = ""
+
 # "problem" decorator: specifies that executing this cell tests this function using a test with a fixed name
 def problem(fun):
     try:
@@ -40,6 +42,8 @@ def problem(fun):
             test_func(fun)
         except Exception as e:
             print("Incorrect")
+            if log_message != "":
+                print(log_message)
             print(str(e))
         else:
             print("Correct!")
@@ -268,11 +272,12 @@ def f_arbitrary_bit_pattern(x: list[bool], pattern: list[bool]) -> bool:
     return x == pattern
 
 def test_arbitrary_bit_pattern_oracle(fun=ref.arbitrary_bit_pattern_oracle if ref_available else None):
+    global log_message
     qpu = QPU(filters=BIT_DEFAULT)
     for n in range(1, 5):
         for p in range(2 ** n):
             pattern = int_to_bool_array(n=p, num_bits=n)
-            print(f"Testing {n=}, {pattern=}")
+            log_message = f"Testing {n=}, {pattern=}"
             f = partial(f_arbitrary_bit_pattern, pattern=pattern)
             quantum_op = partial(fun, pattern=pattern)
             run_test_reversible(qpu, n, n+1, quantum_op, f)

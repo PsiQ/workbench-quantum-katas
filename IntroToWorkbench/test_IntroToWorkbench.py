@@ -61,15 +61,16 @@ def problem(arg):
 
 @mark.parametrize("fun", [ref.instantiate_qpu] if ref_available else [])
 def test_instantiate_qpu(fun):
+    global log_message
     for num_qubits in range(1, 7):
         actual = fun(num_qubits)
 
+        log_message = f"Testing {num_qubits} qubits"
+
         if not isinstance(actual, QPU):
-            print(f"Testing {num_qubits} qubits")
             raise ValueError(f"Expected a QPU object, got {type(actual).__name__}.")
 
         if actual.num_qubits != num_qubits:
-            print(f"Testing {num_qubits} qubits")
             raise ValueError(f"Expected {num_qubits} qubits, got {actual.num_qubits}.")
 
 
@@ -77,20 +78,20 @@ def test_instantiate_qpu(fun):
 
 @mark.parametrize("fun", [ref.instantiate_qubits] if ref_available else [])
 def test_instantiate_qubits(fun):
+    global log_message
     for num_qubits in range(1, 7):
         qpu = QPU(num_qubits=num_qubits)
         actual = fun(qpu, num_qubits, f"reg{num_qubits}")
 
+        log_message = f"Testing qubit instantiation with {num_qubits} qubits"
+
         if not isinstance(actual, Qubits):
-            print(f"Testing qubit instantiation with {num_qubits} qubits")
             raise ValueError(f"Expected a Qubits object, got {type(actual).__name__}.")
 
         if actual.num_qubits != num_qubits:
-            print(f"Testing qubit instantiation with {num_qubits} qubits")
             raise ValueError(f"Expected {num_qubits} qubits, got {actual.num_qubits}.")
         
         if actual.name != f"reg{num_qubits}":
-            print(f"Testing qubit instantiation with {num_qubits} qubits")
             raise ValueError(f"Expected name 'reg{num_qubits}', got '{actual.name}'.")
 
 
@@ -190,6 +191,7 @@ def test_apply_controlled_gates(fun):
 
 @mark.parametrize("fun", [ref.indexing_and_slicing] if ref_available else [])
 def test_indexing_and_slicing(fun):
+    global log_message
     for num_qubits in range(5, 10):
         qpu = QPU(num_qubits=num_qubits)
         reg = Qubits(num_qubits, f"reg", qpu=qpu)
@@ -204,20 +206,19 @@ def test_indexing_and_slicing(fun):
         looking_for_x = [reg1_mask, reg2_mask]
         found_insts = []
         for inst in qpu.get_instructions():
+            log_message = f"Testing indexing and slicing with {num_qubits} qubits"
+
             if inst.opcode is not opcodes.OP_qc_x:
                 if is_physical_operation(inst.opcode):
-                    print(f"Testing indexing and slicing with {num_qubits} qubits")
                     raise ValueError(f"Found an unexpected quantum operation {opcode_to_opname(inst.opcode)}.")
                 continue
             found_insts.append(inst)
         
         if len(found_insts) != len(looking_for_x):
-            print(f"Testing indexing and slicing with {num_qubits} qubits")
             raise ValueError(f"Expected {len(looking_for_x)} x gates, got {len(found_insts)}.")
 
         for index, inst in enumerate(found_insts):
             if inst.target != looking_for_x[index]:
-                print(f"Testing indexing and slicing with {num_qubits} qubits")
                 expected_str = mask_to_index_list(looking_for_x[index], num_qubits)
                 target_str = mask_to_index_list(inst.target, num_qubits)
                 raise ValueError(f"Gate {index + 1}: Expected x gate on qubits {expected_str} of `reg`, got qubits {target_str} of `reg`.")
@@ -279,16 +280,20 @@ def test_concatenate_registers(fun):
 
 @mark.parametrize("fun", [ref.examine_state_vector] if ref_available else [])
 def test_examine_state_vector(fun):
+    global log_message
     rd.seed(0xC0FFEE)
 
     # Test a single basis state
     for num_qubits in range(2, 5):
+
         qpu = QPU(num_qubits=num_qubits)
         reg = Qubits(num_qubits, "reg", qpu=qpu)
 
         amps = [0] * 2 ** num_qubits
         val = rd.randint(0, 2 ** num_qubits - 1)
         amps[val] = 1
+        
+        log_message = f"Testing state vector {amps}"
 
         expected_states = [val]
 
@@ -297,11 +302,9 @@ def test_examine_state_vector(fun):
         actual_states = fun(qpu)
 
         if len(actual_states) != len(expected_states):
-            print(f"Testing state vector {amps}")
             raise ValueError(f"Expected {len(expected_states)} indices, got {len(actual_states)}.")
 
         if not np.allclose(actual_states, expected_states):
-            print(f"Testing state vector {amps}")
             raise ValueError(f"Expected indices {expected_states}, got {actual_states}.")
         
     # Test multiple basis states with the same amplitudes
@@ -317,16 +320,16 @@ def test_examine_state_vector(fun):
         for index in expected_states:
             amps[index] = amp
         
+        log_message = f"Testing state vector {amps}"
+        
         reg.push_state(amps)
 
         actual_states = fun(qpu)
 
         if len(actual_states) != len(expected_states):
-            print(f"Testing state vector {amps}")
             raise ValueError(f"Expected {len(expected_states)} indices, got {len(actual_states)}.")
 
         if not np.allclose(actual_states, expected_states):
-            print(f"Testing state vector {amps}")
             raise ValueError(f"Expected indices {expected_states}, got {actual_states}.")
 
 
@@ -377,7 +380,9 @@ def test_use_measurements(fun):
 
 @mark.parametrize("qbk_class", [ref.GHZ] if ref_available else [])
 def test_ghz(qbk_class):
+    global log_message
     for num_qubits in range(2, 6):
+        log_message = f"Testing GHZ with {num_qubits} qubits"
         qpu = QPU(num_qubits=num_qubits)
         reg1 = Qubits(num_qubits, "reg", qpu=qpu)
         qbk = qbk_class()
@@ -387,7 +392,6 @@ def test_ghz(qbk_class):
         expected_amps = [0.0] * 2 ** num_qubits
         expected_amps[0] = expected_amps[2 ** num_qubits - 1] = float(1 / np.sqrt(2))
         if not np.allclose(amps, expected_amps):
-            print(f"Testing GHZ with {num_qubits} qubits")
             raise ValueError(f"Expected amplitudes {expected_amps},\n got {amps}.")
 
 
@@ -395,7 +399,10 @@ def test_ghz(qbk_class):
 
 @mark.parametrize("fun", [ref.apply_qubrick] if ref_available else [])
 def test_apply_qubrick(fun):
+    global log_message
     for num_qubits in range(3, 6):
+        log_message = f"Testing GHZ Qubrick with {num_qubits} qubits"
+
         qpu = fun(num_qubits)
 
         qubrick_run = False
@@ -405,12 +412,10 @@ def test_apply_qubrick(fun):
                 break
 
         if not qubrick_run:
-            print(f"Testing GHZ Qubrick with {num_qubits} qubits")
             raise ValueError("Your solution should use a Qubrick.")
 
         amps = qpu.pull_state()
         expected_amps = [0.0] * 2 ** num_qubits
         expected_amps[0] = expected_amps[2 ** num_qubits - 1] = float(1.0 / np.sqrt(2))
         if not np.allclose(amps, expected_amps):
-            print(f"Testing GHZ Qubrick with {num_qubits} qubits")
             raise ValueError(f"Expected amplitudes {expected_amps}, got {amps}.")

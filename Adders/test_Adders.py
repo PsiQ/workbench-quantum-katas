@@ -235,8 +235,8 @@ def test_ripplecarryaddertwobit(qbk_class):
 
 @mark.parametrize("qbk_class", [ref.RippleCarryAdder] if ref_available else [])
 def test_ripplecarryadder(qbk_class):
+    global log_message
     for n in range(2, 6):
-        global log_message
         log_message = f"Testing {n=}"
         f = partial(f_add, n=n)
         qbk = qbk_class()
@@ -332,8 +332,8 @@ def test_cuccaroaddertwobit(qbk_class):
 
 @mark.parametrize("qbk_class", [ref.CuccaroAdder] if ref_available else [])
 def test_cuccaroadder(qbk_class):
+    global log_message
     for n in range(2, 6):
-        global log_message
         log_message = f"Testing {n=}"
         f = partial(f_add, n=n)
         qbk = qbk_class()
