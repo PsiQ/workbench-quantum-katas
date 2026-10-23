@@ -1,6 +1,6 @@
 from itertools import product
 from math import sqrt, cos, sin
-from random import seed, uniform
+from random import randint, seed, uniform
 from typing import Callable, Sequence
 from psiqdk.workbench import QPU, Qubits
 from pytest import approx, mark
@@ -208,3 +208,137 @@ def test_naivestateprep(qbk_class):
         fun_a = partial(qbk.compute, a=a)
         check_state_vector(fun_a, n, a)
 
+
+#####################################################################################################################################
+
+@mark.parametrize("fun", [ref.discretize_probabilities] if ref_available else [])
+def test_discretize_probabilities(fun):
+    global log_message
+
+    tests = [
+        # Already-discretized inputs
+        ([0.5, 0.5], 1),
+        ([0.75, 0.25], 2),
+        ([0.5, 0.25, 0.25], 2),
+        ([0.125, 0.25, 0.375, 0.25], 3),
+        ([0.5, 0.25, 0.25], 3),
+        # Non-discretized inputs that round nicely (results of rounding add up to 1)
+        ([0.4, 0.6], 1),
+        ([0.45, 0.2, 0.35], 2),
+        # Non-discretized inputs that do not round nicely (results of rounding add up to something other than 1)
+        ([0.3, 0.3, 0.3, 0.1], 2),      # Rounds down all
+        ([0.3, 0.3, 0.3, 0.1], 3),      # Rounds down more than up
+        ([0.5, 0.1, 0.1, 0.1, 0.2], 2), # Rounds down more than up
+        ([0.2, 0.2, 0.2, 0.2, 0.2], 2), # Rounds up all
+        ([0.2, 0.2, 0.2, 0.2, 0.2], 3), # Rounds up all
+        ([0.3, 0.2, 0.2, 0.2, 0.1], 2), # Rounds up more than down
+    ]
+
+    # Add random tests
+    seed(42)
+    for _ in range(20):
+        b = randint(1, 4)
+        n = randint(2, 8)
+        raw_nums = [uniform(0, 1) for _ in range(n)]
+        s = sum(raw_nums)
+        probs = [r / s for r in raw_nums]
+        tests.append((probs, b))
+
+    # Let's be a little paranoid about the generated tests
+    for probs, _ in tests:
+        if abs(sum(probs) - 1) > 1e-6:
+            print(probs)
+            raise RuntimeError("Tests are incorrect, sorry!")
+
+    # Actual testing
+    for probs, b in tests:
+        log_message = f"Testing {probs=}, {b=}"
+        N = len(probs)
+        p2b = 1 << b
+        discrete_probs = fun(probs, b)
+
+        if len(discrete_probs) != N:
+            raise ValueError(f"Returned list should have the same length as `probs`: expected {N}, got {len(discrete_probs)}")
+
+        sum_dp = 0
+        for p, dp in zip(probs, discrete_probs):
+            if not isinstance(dp, int):
+                raise ValueError(f"Each element of the returned list should be an integer, got {dp}")
+            if dp < 0 or dp > p2b:
+                raise ValueError(f"Each element of the returned list should be between 0 and {p2b}, got {dp}")
+            if abs(dp / p2b - p) > 1 / p2b:
+                raise ValueError(f"Each element of the returned list, divided by {p2b} should be within {1 / p2b} of its input counterpart. "
+                                 f"For {p}, got {dp / p2b}")
+            sum_dp += dp
+
+        if sum_dp != p2b:
+            raise ValueError(f"The sum of all elements of the returned list should be {p2b}, got {sum_dp}")
+
+
+
+#####################################################################################################################################
+
+@mark.parametrize("fun", [ref.repack] if ref_available else [])
+def test_repack(fun):
+    global log_message
+
+    tests = [
+        (1, 1, [0, 2]),
+        (1, 1, [1, 1]),
+        (1, 2, [4, 0]),
+        (1, 2, [1, 3]),
+        (1, 2, [2, 2]),
+        (2, 2, [1, 1, 1, 1]),
+        (2, 2, [0, 2, 0, 2]),
+        (2, 2, [0, 3, 1, 0]),
+        (2, 4, [0, 16, 0, 0]),
+        (2, 4, [8, 4, 0, 4]),
+        (2, 4, [7, 3, 1, 5]),
+        (2, 4, [4, 4, 4, 4]),
+    ]
+
+    # Add random tests
+    seed(42)
+    for _ in range(42):
+        n = randint(2, 5)
+        b = randint(n, 5)
+        points = [randint(0, 1 << b) for _ in range((1 << n) - 1)]
+        points = [0] + sorted(points) + [1 << b]
+        values = [points[i + 1] - points[i] for i in range(1 << n)]
+        tests.append((n, b, values))
+
+    # Let's be a little paranoid about the generated tests
+    for n, b, values in tests:
+        if len(values) != 1 << n or sum(values) != 1 << b:
+            print(values)
+            raise RuntimeError("Tests are incorrect, sorry!")
+
+    for n, b, values in tests:
+        log_message = f"Testing {n=}, {b=}, {values=}"
+        repacked_values = fun(n, b, values.copy())
+        log_message += f"\nRepacked values {repacked_values}"
+
+        if len(repacked_values) != len(values):
+            raise ValueError(f"The length of repacked values should be the same as the length of original values: "
+                             f"original values had length {len(values)}, repacked values has length {len(repacked_values)}"
+                             )
+
+        avg_column_height = 1 << (b - n)
+        reconstructed_column_heights = [0] * len(values)
+        for ind, (alias, threshold) in enumerate(repacked_values):
+            if alias < 0 or alias >= len(values):
+                raise ValueError(f"Each alias value should be between 0 and {len(values) - 1}, inclusive. Got {alias}")
+
+            if threshold < 0 or threshold > avg_column_height:
+                raise ValueError(f"Each threshold value should be between 0 and {avg_column_height}, inclusive. Got {threshold}")
+
+            if alias == ind and threshold < avg_column_height:
+                raise ValueError(f"Each alias value should be different from the index of the column it is in. Got {alias} in column {ind}")
+
+            reconstructed_column_heights[ind] += threshold
+            reconstructed_column_heights[alias] += avg_column_height - threshold
+
+        if reconstructed_column_heights != values:
+            raise ValueError(f"The total weight of each value in repacked list should match its original weight. "
+                             f"In repacked list, got weights {reconstructed_column_heights}, expected {values}")
+        # TODO: do better in height/weight/value terminology
