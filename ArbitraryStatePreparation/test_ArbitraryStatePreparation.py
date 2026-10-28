@@ -3,6 +3,7 @@ from math import sqrt, cos, sin
 from random import randint, seed, uniform
 from typing import Callable, Sequence
 from psiqdk.workbench import QPU, Qubits
+from psiqdk.workbench.filter_presets import BIT_DEFAULT
 from pytest import approx, mark
 from warnings import catch_warnings
 from functools import partial
@@ -283,38 +284,40 @@ def test_repack(fun):
     global log_message
 
     tests = [
-        (1, 1, [0, 2]),
-        (1, 1, [1, 1]),
-        (1, 2, [4, 0]),
-        (1, 2, [1, 3]),
-        (1, 2, [2, 2]),
-        (2, 2, [1, 1, 1, 1]),
-        (2, 2, [0, 2, 0, 2]),
-        (2, 2, [0, 3, 1, 0]),
-        (2, 4, [0, 16, 0, 0]),
-        (2, 4, [8, 4, 0, 4]),
-        (2, 4, [7, 3, 1, 5]),
-        (2, 4, [4, 4, 4, 4]),
+        (1, 0, [0, 2]),
+        (1, 0, [1, 1]),
+        (1, 1, [4, 0]),
+        (1, 1, [1, 3]),
+        (1, 1, [2, 2]),
+        (2, 0, [1, 1, 1, 1]),
+        (2, 0, [0, 2, 0, 2]),
+        (2, 0, [0, 3, 1, 0]),
+        (2, 2, [0, 16, 0, 0]),
+        (2, 2, [8, 4, 0, 4]),
+        (2, 2, [7, 3, 1, 5]),
+        (2, 2, [4, 4, 4, 4]),
     ]
 
     # Add random tests
     seed(42)
     for _ in range(42):
         n = randint(2, 5)
-        b = randint(n, 5)
-        points = [randint(0, 1 << b) for _ in range((1 << n) - 1)]
-        points = [0] + sorted(points) + [1 << b]
+        b = randint(2, 5)
+        # Values must be 1 << n numbers that add up to 1 << (n + b)
+        points = [randint(0, 1 << (n + b)) for _ in range((1 << n) - 1)]
+        points = [0] + sorted(points) + [1 << (n + b)]
         values = [points[i + 1] - points[i] for i in range(1 << n)]
         tests.append((n, b, values))
 
     # Let's be a little paranoid about the generated tests
     for n, b, values in tests:
-        if len(values) != 1 << n or sum(values) != 1 << b:
+        if len(values) != 1 << n or sum(values) != 1 << (n + b):
             print(values)
             raise RuntimeError("Tests are incorrect, sorry!")
 
     for n, b, values in tests:
         log_message = f"Testing {n=}, {b=}, {values=}"
+        # Do a deep copy of the input list - the solution can modify it at will
         repacked_values = fun(n, b, values.copy())
         log_message += f"\nRepacked values {repacked_values}"
 
@@ -323,22 +326,69 @@ def test_repack(fun):
                              f"original values had length {len(values)}, repacked values has length {len(repacked_values)}"
                              )
 
-        avg_column_height = 1 << (b - n)
-        reconstructed_column_heights = [0] * len(values)
+        avg_column_height = 1 << b
+        reconstructed_original_values = [0] * len(values)
         for ind, (alias, threshold) in enumerate(repacked_values):
             if alias < 0 or alias >= len(values):
-                raise ValueError(f"Each alias value should be between 0 and {len(values) - 1}, inclusive. Got {alias}")
+                raise ValueError(f"Each alias should be between 0 and {len(values) - 1}, inclusive. "
+                                 f"For column {ind}, got {alias}")
 
             if threshold < 0 or threshold > avg_column_height:
-                raise ValueError(f"Each threshold value should be between 0 and {avg_column_height}, inclusive. Got {threshold}")
+                raise ValueError(f"Each threshold should be between 0 and {avg_column_height}, inclusive. "
+                                 f"For column {ind}, got {threshold}")
 
-            if alias == ind and threshold < avg_column_height:
-                raise ValueError(f"Each alias value should be different from the index of the column it is in. Got {alias} in column {ind}")
+            reconstructed_original_values[ind] += threshold
+            reconstructed_original_values[alias] += avg_column_height - threshold
 
-            reconstructed_column_heights[ind] += threshold
-            reconstructed_column_heights[alias] += avg_column_height - threshold
+        if reconstructed_original_values != values:
+            raise ValueError(f"The total number of boxes of each color in repacked list should match the original value. "
+                             f"In repacked list, got box numbers {reconstructed_original_values}, expected {values}")
 
-        if reconstructed_column_heights != values:
-            raise ValueError(f"The total weight of each value in repacked list should match its original weight. "
-                             f"In repacked list, got weights {reconstructed_column_heights}, expected {values}")
-        # TODO: do better in height/weight/value terminology
+
+#####################################################################################################################################
+
+@mark.parametrize("qbk_class", [ref.AliasStateSwap] if ref_available else [])
+def test_aliasstateswap(qbk_class):
+    global log_message
+
+    for n, b in product(range(1, 3), range(1, 4)):
+        qpu = QPU(filters=BIT_DEFAULT)
+        swapper = qbk_class()
+        for input_state_reg, input_alias, input_threshold, input_coin_toss in product(
+            range(2 ** n), range(2 ** n), range(2 ** b), range(2 ** b)):
+
+            log_message = f"Testing {n=}, {b=}"
+            log_message += f"\nError for state_reg={input_state_reg}, alias={input_alias}, threshold={input_threshold}, coin_toss={input_coin_toss}: "
+
+            # Reset QPU and allocate the registers of the required type
+            qpu.reset(3 * (n + b))
+            state_reg = Qubits(n, "state_reg", qpu)
+            alias = Qubits(n, "alias", qpu)
+            threshold = Qubits(b, "threshold", qpu)
+            coin_toss = Qubits(b, "coin_toss", qpu)
+
+            # Prepare quantum inputs
+            state_reg.write(input_state_reg)
+            alias.write(input_alias)
+            threshold.write(input_threshold)
+            coin_toss.write(input_coin_toss)
+
+            # Run the swap
+            swapper.compute(state_reg, alias, threshold, coin_toss)
+
+            # Verify the results
+            res_state_reg = state_reg.read()
+            res_alias = alias.read()
+            res_threshold = threshold.read()
+            res_coin_toss = coin_toss.read()
+
+            if res_threshold != input_threshold or res_coin_toss != input_coin_toss:
+                raise ValueError(f"The state of the register {'threshold' if res_threshold != input_threshold else 'coin_toss'} should not change")
+            if input_coin_toss >= input_threshold:
+                if res_state_reg != input_alias or res_alias != input_state_reg:
+                    raise ValueError(f"Registers `state_reg` and `alias` should be swapped")
+            else:
+                if res_state_reg != input_state_reg or res_alias != input_alias:
+                    raise ValueError(f"The state of the register {'state_reg' if res_state_reg != input_state_reg else 'alias'} should not change")
+        
+
