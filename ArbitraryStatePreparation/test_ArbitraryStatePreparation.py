@@ -1,8 +1,9 @@
 from itertools import product
-from math import sqrt, cos, sin
+from math import sqrt
 from random import randint, seed, uniform
+from scipy.stats import chisquare
 from typing import Callable, Sequence
-from psiqdk.workbench import QPU, Qubits
+from psiqdk.workbench import QPU, Qubits, Qubrick
 from psiqdk.workbench.filter_presets import BIT_DEFAULT
 from pytest import approx, mark
 from warnings import catch_warnings
@@ -276,13 +277,10 @@ def test_discretize_probabilities(fun):
             raise ValueError(f"The sum of all elements of the returned list should be {p2b}, got {sum_dp}")
 
 
-
 #####################################################################################################################################
 
-@mark.parametrize("fun", [ref.repack] if ref_available else [])
-def test_repack(fun):
-    global log_message
-
+def generate_classical_tests():
+    '''Generate a list of tests in format (n, b, values) that serve as input to repacking.'''
     tests = [
         (1, 0, [0, 2]),
         (1, 0, [1, 1]),
@@ -315,6 +313,15 @@ def test_repack(fun):
             print(values)
             raise RuntimeError("Tests are incorrect, sorry!")
 
+    return tests
+
+
+@mark.parametrize("fun", [ref.repack] if ref_available else [])
+def test_repack(fun):
+    global log_message
+
+    tests = generate_classical_tests()
+
     for n, b, values in tests:
         log_message = f"Testing {n=}, {b=}, {values=}"
         # Do a deep copy of the input list - the solution can modify it at will
@@ -343,6 +350,131 @@ def test_repack(fun):
         if reconstructed_original_values != values:
             raise ValueError(f"The total number of boxes of each color in repacked list should match the original value. "
                              f"In repacked list, got box numbers {reconstructed_original_values}, expected {values}")
+
+
+#####################################################################################################################################
+
+def repack_reference(n: int, b: int, values: list[int]) -> list[tuple[int, int]]:
+    '''The reference solution to problem 2 from the workbook.
+    
+    We cannot import it from the workbook directly in case the learner doesn't have importnb installed.'''
+    avg_column_height = 1 << b
+    repacked_values = [(ind, 0) for ind in range(len(values))]
+
+    for _ in range(len(values)):
+        ind_below_avg = next((ind for ind in range(len(values)) if values[ind] < avg_column_height), None)
+        ind_above_avg = next((ind for ind in range(len(values)) if values[ind] > avg_column_height), None)
+        if ind_below_avg is None or ind_above_avg is None:
+            break
+
+        repacked_values[ind_below_avg] = (ind_above_avg, values[ind_below_avg])
+        fixup = avg_column_height - values[ind_below_avg]
+        values[ind_below_avg] += fixup
+        values[ind_above_avg] -= fixup
+        
+    return repacked_values
+
+
+@mark.parametrize("fun", [ref.sample] if ref_available else [])
+def test_sample(fun):
+    global log_message
+
+    # Generate the same tests we used in problem 2
+    tests = generate_classical_tests()
+
+    n_samples = 1024
+    alpha = 0.05
+
+    for (n, b, values) in tests:
+        # Convert the test case to repacked values that are input for this problem
+        repacked_values = repack_reference(n, b, values.copy())
+
+        log_message = f"Testing {n=}, {b=}, {values=}, {repacked_values=}"
+        
+        # Run each test 3 times, reject only if fails all 3
+        passed = False
+        for run_ind in range(3):
+            expected_counts = [n_samples * val / (1 << (n + b)) for val in values]
+
+            actual_counts = [0] * (1 << n)
+            for _ in range(n_samples):
+                sample = fun(b, repacked_values)
+                # Check for kinds of errors that re-sampling is not going to fix
+                if not isinstance(sample, int) or sample < 0 or sample >= (1 << n):
+                    raise ValueError(f"Each returned value should be an integer between 0 and {(1 << n) - 1}, inclusive. Got {sample}")
+                if expected_counts[sample] == 0:
+                    raise ValueError(f"Value {sample} has expected probability of 0 and should not be present in samples.")
+                actual_counts[sample] += 1
+
+            # Filter out entries where expected_counts = 0 (chisquare doesn't support that)
+            actual_counts_filtered = [actual_counts[ind] for ind in range(1 << n) if expected_counts[ind] > 0]
+            expected_counts_filtered = [expected_counts[ind] for ind in range(1 << n) if expected_counts[ind] > 0]
+            if len(expected_counts_filtered) == 1:
+                # There is only one value left, and we know that all individual returns were valid - nothing to check
+                passed = True
+                break
+
+            log_message += f"\nRun {run_ind}:\n" + \
+                f"{actual_counts=}, {expected_counts=}\n"
+
+            _, p_value = chisquare(f_obs=actual_counts_filtered, f_exp=expected_counts_filtered)
+            if p_value >= alpha:
+                passed = True
+                break
+            else:
+                log_message += f"The sampling algorithm does not follow the required distribution; p_value={float(p_value)}"
+        if not passed:
+            raise ValueError("The sampling algorithm failed three test runs")
+
+
+#####################################################################################################################################
+
+def check_data_loader(
+    qbk_class: type[Qubrick],          # Data loader qubrick
+    data: list[int]                    # Data that is being loaded
+) -> None:
+    n_bits_index = len(data).bit_length()
+    n_bits_target = max(data).bit_length()
+    qpu = QPU(filters=BIT_DEFAULT)
+    data_loader = qbk_class()
+    # Run the test on every input basis state
+    for j in range(2 ** n_bits_index):
+        # Reset QPU and allocate the registers
+        qpu.reset(n_bits_index + n_bits_target + 1)
+        index = Qubits(n_bits_index, "index", qpu)
+        target = Qubits(n_bits_target, "target", qpu)
+
+        # Prepare quantum input for index (target is 0)
+        index.write(j)
+
+        # Load the data
+        data_loader.compute(index, target, data)
+
+        # Check the results
+        res_index = index.read()
+        res_target = target.read()
+
+        prefix = f"Error for j={j}: "
+        if res_index != j:
+            raise Exception(f"{prefix}data loading shouldn't change the state of the index register")
+        if j < len(data) and res_target != data[j]:
+            raise Exception(f"{prefix}the state of the target register is {res_target}, expected {data[j]}")
+        if j >= len(data) and res_target != 0:
+            raise Exception(f"{prefix}the state of the target register is {res_target}, expected 0 for indices outside of data")
+
+
+@mark.parametrize("qbk_class", [ref.DataLoader] if ref_available else [])
+def test_dataloader(qbk_class):
+    global log_message
+    for data in [
+        [1, 2, 3],
+        [4, 0, 2, 1],
+        [0, 1, 2, 3],
+        [3],
+        [1, 0]
+    ]:
+        log_message = f"Testing loading {data=}"
+        check_data_loader(qbk_class, data)
 
 
 #####################################################################################################################################
