@@ -1,13 +1,13 @@
+from functools import partial
 from itertools import product
 from math import sqrt
 from random import randint, seed, uniform
 from scipy.stats import chisquare
 from typing import Callable, Sequence
+from warnings import catch_warnings
 from psiqdk.workbench import QPU, Qubits, Qubrick
 from psiqdk.workbench.filter_presets import BIT_DEFAULT
 from pytest import approx, mark
-from warnings import catch_warnings
-from functools import partial
 
 try:
     from importnb import Notebook
@@ -522,5 +522,56 @@ def test_aliasstateswap(qbk_class):
             else:
                 if res_state_reg != input_state_reg or res_alias != input_alias:
                     raise ValueError(f"The state of the register {'state_reg' if res_state_reg != input_state_reg else 'alias'} should not change")
+        
+
+#####################################################################################################################################
+
+@mark.parametrize("qbk_class", [ref.AliasSamplingStatePrep] if ref_available else [])
+def test_aliassamplingstateprep(qbk_class):
+    global log_message
+
+    # Hardcoded tests are a subset of those from problem 1, since here n is number of qubits 
+    # and there n is number of elements in the list (2^n in terms of this problem)
+    tests = [
+        (1, 1, [0.5, 0.5]),
+        (1, 1, [0.75, 0.25]),
+        (2, 1, [0.125, 0.25, 0.375, 0.25]),
+        (1, 1, [0.4, 0.6]),
+        (2, 1, [0.3, 0.3, 0.3, 0.1]),
+        (2, 2, [7 / 16, 3 / 16, 1 / 16, 5 / 16]),
+        (2, 2, [0.45, 0.2, 0.05, 0.3]),
+    ]
+
+    # Add random tests
+    seed(42)
+    for _ in range(20):
+        n = randint(1, 4)
+        raw_nums = [uniform(0, 1) for _ in range(1 << n)]
+        s = sum(raw_nums)
+        probs = [r / s for r in raw_nums]
+        b = randint(1, 4)
+        tests.append((n, b, probs))
+
+    # Let's be a little paranoid about the generated tests
+    for _, _, probs in tests:
+        if abs(sum(probs) - 1) > 1e-6:
+            print(probs)
+            raise RuntimeError("Tests are incorrect, sorry!")
+
+
+    for n, b, probs in tests:
+        log_message = f"Testing {n=}, {b=}, {probs=}"
+        qpu = QPU(num_qubits=2 * n + 3 * b)
+        state_reg = Qubits(n, "state_reg", qpu)
+
+        # Run state prep
+        state_prep = qbk_class()
+        state_prep.compute(state_reg, probs, b)
+
+        # Verify the results using peek_read_probability
+        for basis_state in range(1 << n):
+            basis_state_prob = state_reg.peek_read_probability(basis_state)
+            if basis_state_prob != approx(probs[basis_state], abs = 1 / (1 << (n + b))):
+                raise ValueError(f"The probability of basis state {basis_state} is {basis_state_prob}, expected {probs[basis_state]}")
         
 
