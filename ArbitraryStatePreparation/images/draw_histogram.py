@@ -12,7 +12,7 @@ for filename, heights, aliases, thresholds in [
     ('repack2', [4, 4, 4, 4], [0, 3, 0, 0], [4, 3, 1, 4]),
     ('repack1_step1', [6, 4, 1, 5], [0, 0, 0, 0], [9, 3, 9, 9]),
     ('repack1_step2', [6, 4, 4, 2], [0, 0, 3, 0], [9, 3, 1, 9]),
-
+    ('uniform', [4, 4, 4, 4], [0, 0, 0, 0], [9, 9, 9, 9]),
 ]:
     dwg = svgwrite.Drawing(f'{filename}.svg')
 
