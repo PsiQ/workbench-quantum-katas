@@ -233,7 +233,7 @@ def complex_div_ref(x, y):
     denom = complex_mult_ref(y, ybar)[0]
     return complex_mult_ref(numer, (1 / denom, 0))
 
-@mark.parametrize("fun", [ref.div_test] if ref_available else [])
+@mark.parametrize("fun", [ref.complex_div] if ref_available else [])
 def test_complex_div(fun):
     global log_message
     for i in range(25):
