@@ -36,7 +36,7 @@ If you can't come up with a solution on your own, you can look up the explained 
 
 ### Prerequisite math
 
-* [Complex Arithmetic](./ComplexArithmetic/ComplexArithmetic.ipynb). Learn about imaginary and complex numbers, and how they are commonly used in quantum programs.
+* [Complex arithmetic](./ComplexArithmetic/ComplexArithmetic.ipynb). Learn about imaginary and complex numbers which are used to describe quantum systems.
 
 ### Single-qubit systems
 
