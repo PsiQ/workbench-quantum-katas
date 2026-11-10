@@ -34,7 +34,7 @@ If you can't come up with a solution on your own, you can look up the explained 
 
 * [Introduction to Workbench](./IntroToWorkbench/IntroToWorkbench.ipynb). Learn the basics of writing Workbench programs if you're already familiar with the main quantum computing concepts and want to skip to more exciting topics.
 
-### Prerequisite Math
+### Prerequisite math
 
 * [Complex Arithmetic](./ComplexArithmetic/ComplexArithmetic.ipynb). Learn about imaginary and complex numbers, and how they are commonly used in quantum programs.
 
