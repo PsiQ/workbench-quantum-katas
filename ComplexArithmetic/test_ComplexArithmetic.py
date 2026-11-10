@@ -1,5 +1,5 @@
-import math as m
-import random as r
+from math import atan2, cos, e, log, pi, sin, sqrt
+from random import randint, random
 from warnings import catch_warnings
 
 from pytest import approx, mark
@@ -48,15 +48,15 @@ def problem(arg):
 
 # Generates a random complex number in Cartesian form
 def prep_random_cartesian():
-    real = (r.random() - 0.5) * r.randint(0, 100)
-    imag = (r.random() - 0.5) * r.randint(0, 100)
+    real = (random() - 0.5) * randint(0, 100)
+    imag = (random() - 0.5) * randint(0, 100)
     return (real, imag)
 
 
 # Generates a random complex number in polar form
 def prep_random_polar():
-    rad = r.random() * r.randint(0, 100)
-    theta = (r.random() - 0.5) * m.pi
+    rad = random() * randint(0, 100)
+    theta = (random() - 0.5) * pi
     return (rad, theta)
 
 
@@ -64,17 +64,17 @@ def prep_random_polar():
 # Assert that checks if the result is a tuple of length 2
 def assert_tuple(result):
     if result == None:
-        return ValueError("Your function must return a value!")
+        raise ValueError("Your function must return a value!")
     if not type(result) is tuple:
-        return TypeError(
+        raise TypeError(
             "Your function must return a tuple, returned " + type(result).__name__ + "."
         )
     if result[0] == ... or result[1] == ...:
-        return RuntimeError(
+        raise ValueError(
             "You should not return an ellipsis (...) as part of your answer."
         )
     if len(result) != 2:
-        return ValueError(
+        raise ValueError(
             "Your function must return a tuple of length 2, but returned tuple is of length "
             + str(len(result))
         )
@@ -83,7 +83,7 @@ def assert_tuple(result):
 # Assert that verifies the output is a valid complex tuple, and checks that it matches expected output
 def assert_cartesian(expected, actual, message):
     if actual != approx(expected):
-        return message
+        raise ValueError(message)
 
 
 # Assert that verifies the output is a valid polar tuple, and checks that it matches expected output
@@ -91,27 +91,27 @@ def assert_polar(expected, actual, message):
     (ar, atheta) = actual
     if ar == 0:
         if ar != approx(expected[0]):
-            return message
-        if not (-m.pi < atheta <= m.pi):
-            return "Even for 0 + 0i, the phase must be between -pi and pi."
+            raise ValueError(message)
+        if not (-pi < atheta <= pi):
+            raise ValueError("Even for 0 + 0i, the phase must be between -pi and pi.")
         return
     if actual != approx(expected):
-        return message
+        raise ValueError(message)
 
 
 # ------------------------------------------------------
 # Formats a complex number in Cartesian form neatly
 def format_cartesian(x):
     return (
-        "{0:.3f}".format(x[0])
+        f"{x[0]:.3f}"
         + (" + " if x[1] >= 0 else " - ")
-        + "{0:.3f}i".format(abs(x[1]))
+        + f"{abs(x[1]):.3f}i"
     )
 
 
 # Formats a complex number in polar form neatly
 def format_polar(x):
-    return "{0:.3f} * e^({1:.3f}i)".format(x[0], x[1])
+    return f"{x[0]:.3f} * e^({x[1]:.3f}i)"
 
 
 # ------------------------------------------------------
@@ -129,7 +129,7 @@ def test_imaginary_power(fun):
         log_message = f"Testing i^{n}"
         expected = imaginary_power_ref(n)
         actual = fun(n)
-        if actual == None:
+        if actual == None or actual == ...:
             raise ValueError(f"Your function must return a value!")
         if expected != actual:
             raise ValueError(
@@ -149,27 +149,19 @@ def test_complex_add(fun):
         x = prep_random_cartesian()
         y = prep_random_cartesian()
         expected = complex_add_ref(x, y)
-        log_message = f"Testing {x=} {y=}"
+        log_message = f"Testing x={format_cartesian(x)} y={format_cartesian=}"
         actual = fun(x, y)
-        error = assert_tuple(actual)
-        if error is not None:
-            raise error
-        error = assert_cartesian(
+        assert_tuple(actual)
+        assert_cartesian(
             expected,
             actual,
             ValueError(
-                "Sum doesn't seem to match expected value: expected ("
-                + format_cartesian(x)
-                + ") + ("
-                + format_cartesian(y)
-                + ") = "
+                "Sum doesn't seem to match expected value.\nExpected "
                 + format_cartesian(expected)
                 + ", got "
                 + format_cartesian(actual)
             ),
         )
-        if error is not None:
-            raise error
 
 # ------------------------------------------------------
 
@@ -184,22 +176,14 @@ def test_complex_mult(fun):
         x = prep_random_cartesian()
         y = prep_random_cartesian()
         expected = complex_mult_ref(x, y)
-        log_message = f"Testing {x=} {y=}"
+        log_message = f"Testing x={format_cartesian(x)} y={format_cartesian(y)}"
         actual = fun(x, y)
-        error = assert_tuple(actual)
-        if error is not None:
-            raise error
-        error = assert_cartesian(expected, actual,
-                               ValueError("Product doesn't seem to match expected value:\nexpected ("
-                               + format_cartesian(x)
-                               + ") * ("
-                               + format_cartesian(y)
-                               + ") = "
+        assert_tuple(actual)
+        assert_cartesian(expected, actual,
+                               ValueError("Product doesn't seem to match expected value.\nExpected "
                                + format_cartesian(expected)
                                + ", got "
                                + format_cartesian(actual)))
-        if error is not None:
-            raise error
 
 # ------------------------------------------------------
 def conjugate_ref(x):
@@ -210,21 +194,15 @@ def test_conjugate(fun):
     global log_message
     for i in range(25):
         x = prep_random_cartesian()
-        log_message = f"Testing {x=}"
+        log_message = f"Testing x={format_cartesian(x)}"
         expected = conjugate_ref(x)
         actual = fun(x)
-        error = assert_tuple(actual)
-        if error is not None:
-            raise error
-        error = assert_cartesian(expected, actual,
-                               ValueError("Conjugate doesn't seem to match expected value:\nexpected conjugate of "
-                               + format_cartesian(x)
-                               + " to be "
+        assert_tuple(actual)
+        assert_cartesian(expected, actual,
+                               ValueError("Conjugate doesn't seem to match expected value.\nExpected conjugate to be "
                                + format_cartesian(expected)
                                + ", got "
                                + format_cartesian(actual)))
-        if error is not None:
-            raise error
 
 # ------------------------------------------------------
 def complex_div_ref(x, y):
@@ -241,34 +219,26 @@ def test_complex_div(fun):
         y = (0, 0)
         while y == (0, 0):
             y = prep_random_cartesian()
-        log_message = f"Testing {x=} {y=}"
+        log_message = f"Testing x={format_cartesian(x)} y={format_cartesian(y)}"
         expected = complex_div_ref(x, y)
         actual = fun(x, y)
-        error = assert_tuple(actual)
-        if error is not None:
-            raise error
-        error = assert_cartesian(expected, actual,
-                               ValueError("Quotient doesn't seem to match expected value:\nexpected ("
-                               + format_cartesian(x)
-                               + ") / ("
-                               + format_cartesian(y)
-                               + ") = "
+        assert_tuple(actual)
+        assert_cartesian(expected, actual,
+                               ValueError("Quotient doesn't seem to match expected value.\nExpected "
                                + format_cartesian(expected)
                                + ", got "
                                + format_cartesian(actual)))
-        if error is not None:
-            raise error
 
 # ------------------------------------------------------
 def modulus_ref(x):
-    return m.sqrt(complex_mult_ref(x, conjugate_ref(x))[0])
+    return sqrt(complex_mult_ref(x, conjugate_ref(x))[0])
 
 @mark.parametrize("fun", [ref.modulus] if ref_available else [])
 def test_modulus(fun):
     global log_message
     for i in range(25):
         x = prep_random_cartesian()
-        log_message = f"Testing {x=}"
+        log_message = f"Testing x={format_cartesian(x)}"
         expected = modulus_ref(x)
         actual = fun(x)
         if actual is None:
@@ -276,70 +246,56 @@ def test_modulus(fun):
         if not (type(actual) is float or type(actual) is int):
             raise TypeError("Your function must return a number, returned " + type(actual).__name__ + ".")
         if actual != approx(expected):
-            raise ValueError("Modulus doesn't seem to match expected value: expected |"
-                  + format_cartesian(x)
-                  + f"| = {expected:.3f}, got {actual:.3f}")
+            raise ValueError("Modulus doesn't seem to match expected value "
+                  + f"{expected:.3f}, got {actual:.3f}")
 
 # ------------------------------------------------------
 def complex_exp_ref(x):
-    realpow = m.e ** x[0]
-    return (realpow * m.cos(x[1]), realpow * m.sin(x[1]))
+    realpow = e ** x[0]
+    return (realpow * cos(x[1]), realpow * sin(x[1]))
 
 @mark.parametrize("fun", [ref.complex_exp] if ref_available else [])
 def test_complex_exp(fun):
     global log_message
     for i in range(25):
         x = prep_random_cartesian()
-        log_message = f"Testing {x=}"
+        log_message = f"Testing x={format_cartesian(x)}"
         expected = complex_exp_ref(x)
         actual = fun(x)
-        error = assert_tuple(actual)
-        if error is not None:
-            raise error
-        error = assert_cartesian(expected, actual,
-                               ValueError("Result of exponentiation doesn't seem to match expected value:\nexpected e^("
-                               + format_cartesian(x)
-                               + ") = "
+        assert_tuple(actual)
+        assert_cartesian(expected, actual,
+                               ValueError("Result of exponentiation doesn't seem to match expected value.\nExpected "
                                + format_cartesian(expected)
                                + ", got "
                                + format_cartesian(actual)))
-        if error is not None:
-            raise error
 
 # ------------------------------------------------------
 def complex_exp_real_ref(r, x):
     if r == 0: return (0, 0)
-    lnr = m.log(r)
+    lnr = log(r)
     return complex_exp_ref(complex_mult_ref((lnr, 0), x))
 
 @mark.parametrize("fun", [ref.complex_exp_real] if ref_available else [])
 def test_complex_exp_real(fun):
     global log_message
     for i in range(25):
-        base = r.random() * r.randint(1, 100)
+        base = random() * randint(1, 100)
         if i == 0:
             base = 0
         x = prep_random_cartesian()
-        log_message = f"Testing r={base} {x=}"
+        log_message = f"Testing r={base} x={format_cartesian(x)}"
         expected = complex_exp_real_ref(base, x)
         actual = fun(base, x)
-        error = assert_tuple(actual)
-        if error is not None:
-            raise error
-        error = assert_cartesian(expected, actual,
-                               ValueError("Result of exponentiation doesn't seem to match expected value:\n"
-                               + f"expected {base:.3f}^("
-                               + format_cartesian(x)
-                               + ") = "
+        assert_tuple(actual)
+        assert_cartesian(expected, actual,
+                               ValueError("Result of exponentiation doesn't seem to match expected value.\nExpected "
                                + format_cartesian(expected)
                                + ", got "
                                + format_cartesian(actual)))
-        if error is not None:
-            raise error
 
 # ------------------------------------------------------
 def polar_convert_ref(x):
-    return (modulus_ref(x), m.atan2(x[1], x[0]))
+    return (modulus_ref(x), atan2(x[1], x[0]))
 
 @mark.parametrize("fun", [ref.polar_convert] if ref_available else [])
 def test_polar_convert(fun):
@@ -348,52 +304,40 @@ def test_polar_convert(fun):
         x = prep_random_cartesian()
         if i == 0:
             x = (0, 0)
-        log_message = f"Testing {x=}"
+        log_message = f"Testing x={format_polar(x)}"
         expected = polar_convert_ref(x)
         actual = fun(x)
-        error = assert_tuple(actual)
-        if error is not None:
-            raise error
-        error = assert_polar(expected, actual,
-                           ValueError("Polar conversion doesn't seem to match expected value:\nexpected "
-                           + format_cartesian(x)
-                           + " to be converted to "
+        assert_tuple(actual)
+        assert_polar(expected, actual,
+                           ValueError("Polar conversion doesn't seem to match expected value.\nExpected "
                            + format_polar(expected)
                            + ", got "
                            + format_polar(actual)))
-        if error is not None:
-            raise error
 
 # ------------------------------------------------------
 def cartesian_convert_ref(x):
-    return (x[0] * m.cos(x[1]), x[0] * m.sin(x[1]))
+    return (x[0] * cos(x[1]), x[0] * sin(x[1]))
 
 @mark.parametrize("fun", [ref.cartesian_convert] if ref_available else [])
 def test_cartesian_convert(fun):
     global log_message
     for i in range(25):
         x = prep_random_polar()
-        log_message = f"Testing {x=}"
+        log_message = f"Testing x={format_polar(x)}"
         expected = cartesian_convert_ref(x)
         actual = fun(x)
-        error = assert_tuple(actual)
-        if error is not None:
-            raise error
-        error = assert_cartesian(expected, actual,
-                               ValueError("Cartesian conversion doesn't seem to match expected value:\nexpected "
-                               + format_polar(x)
-                               + " to be converted to "
+        assert_tuple(actual)
+        assert_cartesian(expected, actual,
+                               ValueError("Cartesian conversion doesn't seem to match expected value.\nExpected "
                                + format_cartesian(expected)
                                + ", got "
                                + format_cartesian(actual)))
-        if error is not None:
-            raise error
 
 # ------------------------------------------------------
 def polar_mult_ref(x, y):
     angle = x[1] + y[1]
-    if angle > m.pi: angle -= 2 * m.pi
-    elif angle <= -m.pi: angle += 2 * m.pi
+    if angle > pi: angle -= 2 * pi
+    elif angle <= -pi: angle += 2 * pi
     return (x[0] * y[0], angle)
 
 @mark.parametrize("fun", [ref.polar_mult] if ref_available else [])
@@ -408,23 +352,15 @@ def test_polar_mult(fun):
         elif i == 1:
             x = (3, -2)
             y = x
-        log_message = f"Testing {x=} {y=}"
+        log_message = f"Testing x={format_polar(x)}, y={format_polar(y)}"
         expected = polar_mult_ref(x, y)
         actual = fun(x, y)
-        error = assert_tuple(actual)
-        if error is not None:
-            raise error
-        error = assert_polar(expected, actual,
-                           ValueError("Product doesn't seem to match expected value:\nexpected ("
-                           + format_polar(x)
-                           + ") * ("
-                           + format_polar(y)
-                           + ") = "
+        assert_tuple(actual)
+        assert_polar(expected, actual,
+                           ValueError("Product doesn't seem to match expected value.\nExpected "
                            + format_polar(expected)
                            + ", got "
                            + format_polar(actual)))
-        if error is not None:
-            raise error
 
 # ------------------------------------------------------
 def complex_exp_arbitrary_ref(x, y):
@@ -439,20 +375,12 @@ def test_complex_exp_arbitrary(fun):
         y = prep_random_cartesian()
         if i == 0:
             x = (0, 0)
-        log_message = f"Testing {x=} {y=}"
+        log_message = f"Testing x={format_cartesian(x)}, y={format_cartesian(y)}"
         expected = complex_exp_arbitrary_ref(x, y)
         actual = fun(x, y)
-        error = assert_tuple(actual)
-        if error is not None:
-            raise error
-        error = assert_cartesian(expected, actual,
-                               ValueError("Result of exponentiation doesn't seem to match expected value:\nexpected ("
-                               + format_cartesian(x)
-                               + ")^("
-                               + format_cartesian(y)
-                               + ") = "
+        assert_tuple(actual)
+        assert_cartesian(expected, actual,
+                               ValueError("Result of exponentiation doesn't seem to match expected value.\nExpected "
                                + format_cartesian(expected)
                                + ", got "
                                + format_cartesian(actual)))
-        if error is not None:
-            raise error
