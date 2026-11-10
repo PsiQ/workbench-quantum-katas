@@ -1,8 +1,8 @@
-import random as r
 from cmath import sqrt
+from random import randint, random
 from warnings import catch_warnings
 
-from pytest import approx, mark
+from pytest import approx, fail, mark
 
 try:
     from importnb import Notebook
@@ -12,7 +12,7 @@ try:
             import Workbook_LinearAlgebra as ref
     ref_available = True
 except ImportError:
-    pytest.fail("import error")
+    fail("import error")
     ref_available = False
     # Skip all tests in this file - pytest checks reference solutions and that won't work without these imports
     pytestmark = mark.skip("No importnb/reference file available")
@@ -47,7 +47,7 @@ def problem(arg):
 
 # Generates a random number from -5 to 5
 def randnum():
-    return (r.random() - 0.5) * r.randint(1, 10)
+    return (random() - 0.5) * randint(1, 10)
 
 # Generates a random complex number
 def randcomplex():
@@ -56,8 +56,8 @@ def randcomplex():
 # Height (number of rows) is the first dimension for matrices
 # Generates a random matrix populated with complex numbers
 def gen_complex_matrix(h = -1, w = -1):
-    if h == -1: h = r.randint(1, 5)
-    if w == -1: w = r.randint(1, 5)
+    if h == -1: h = randint(1, 5)
+    if w == -1: w = randint(1, 5)
     ans = []
     for i in range(h):
         temp = []
@@ -132,9 +132,9 @@ def format_row(row):
         ar = abs(num.real)
         ai = abs(num.imag)
         if ar < 10:
-            ans += "{0:.3f}".format(num.real)
+            ans += f"{num.real:.3f}"
         elif ar < 100:
-            ans += "{0:.2f}".format(num.real)
+            ans += f"{num.real:.2f}"
         else:
             ans += str(round(num.real))
         
@@ -142,9 +142,9 @@ def format_row(row):
             ans += '+'
         
         if ai < 10:
-            ans += "{0:.3f}".format(num.imag)
+            ans += f"{num.imag:.3f}"
         elif ai < 100:
-            ans += "{0:.2f}".format(num.imag)
+            ans += f"{num.imag:.2f}"
         else:
             ans += str(round(num.imag))
         
@@ -176,21 +176,30 @@ def format_matrix(matrix, label):
 # Checks that two matrices are (approximately) equal to each other
 def matrix_equal(act, exp):
     if act == ... or exp == ...:
-        return False
+        raise ValueError("Your function must return a value!")
     
     h = len(act)
     w = len(act[0])
     # Check that sizes match
     if h != len(exp) or w != len(exp[0]):
-        return False
+        raise ValueError("Unexpected result:\n"
+                  + gen_labeled_message([exp, act],
+                                        ["Expected: ", "You returned: "])
+                  + "Try again!")
     
     for i in range(h):
         # Check that the length of each row matches the expectation
         if w != len(act[i]):
-            return False
+            raise ValueError("Unexpected result:\n"
+                    + gen_labeled_message([exp, act],
+                                            ["Expected: ", "You returned: "])
+                    + "Try again!")
         for j in range(w):
             if act[i][j] == ... or act[i][j] != approx(exp[i][j]):
-                return False
+                raise ValueError("Unexpected result:\n"
+                        + gen_labeled_message([exp, act],
+                                                ["Expected: ", "You returned: "])
+                        + "Try again!")
     return True
 
 # ------------------------------------------------------
@@ -226,16 +235,11 @@ def test_matrix_add(fun):
         a = gen_complex_matrix()
         b = gen_complex_matrix(len(a), len(a[0]))
         expected = matrix_add_ref(a, b)
-        # log_message = f"Testing\n{format_matrix(a, "a")}\n{format_matrix(b,"b")}"
-        log_message = f"Testing\n{a=}\n{b=}"
+        log_message = f"Testing\n{format_matrix(a, 'a: ')}\n{format_matrix(b,'b: ')}\n"
         actual = fun(a, b)
         if actual == None:
             raise ValueError("Your function must return a value!")
-        if not matrix_equal(actual, expected):
-            raise ValueError("Unexpected results of addition: \n"
-                  + gen_labeled_message([a, b, expected, actual],
-                                        ["A: ", "B: ", "Expected: ", "You returned: "])
-                  + "Try again!")
+        matrix_equal(actual, expected)
 
 # ------------------------------------------------------
 def scalar_mult_ref(x, a):
@@ -254,15 +258,11 @@ def test_scalar_mult(fun):
         a = gen_complex_matrix()
         x = randcomplex()
         expected = scalar_mult_ref(x, a)
-        log_message = f"Testing {x=} {a=}"
+        log_message = f"Testing {x=}\n{format_matrix(a, 'a: ')}"
         actual = fun(x, a)
         if actual == None:
             raise ValueError("Your function must return a value!")
-        if not matrix_equal(actual, expected):
-            raise ValueError(f"Unexpected results of scalar multiplication: \nScalar: {x:.3f}\n\n"
-                  + gen_labeled_message([a, expected, actual],
-                                        ["A: ", "Expected: ", "You returned: "])
-                  + "Try again!")
+        matrix_equal(actual, expected)
 
 # ------------------------------------------------------
 def matrix_mult_ref(a, b):
@@ -283,15 +283,11 @@ def test_matrix_mult(fun):
         a = gen_complex_matrix()
         b = gen_complex_matrix(len(a[0]))
         expected = matrix_mult_ref(a, b)
-        log_message = f"Testing {a=} {b=}"
+        log_message = f"Testing\n{format_matrix(a, 'a: ')}\n{format_matrix(b, 'b: ')}"
         actual = fun(a, b)
         if actual == None:
             raise ValueError("Your function must return a value!")
-        if not matrix_equal(actual, expected):
-            raise ValueError("Unexpected results of matrix multiplication: \n"
-                  + gen_labeled_message([a, b, expected, actual],
-                                        ["A: ", "B: ", "Expected: ", "You returned: "])
-                  + "Try again!")
+        matrix_equal(actual, expected)
 
 # ------------------------------------------------------
 def matrix_inverse_ref(m):
@@ -312,15 +308,11 @@ def test_matrix_inverse(fun):
             a = gen_complex_matrix(2,2)
             det = (a[0][0] * a[1][1]) - (a[0][1] * a[1][0])
         expected = matrix_inverse_ref(a)
-        log_message = f"Testing {a=}"
+        log_message = f"Testing\n{format_matrix(a, 'a: ')}"
         actual = fun(a)
         if actual == None:
             raise ValueError("Your function must return a value!")
-        if not matrix_equal(actual, expected):
-            raise ValueError("Inverse doesn't seem to match expected:\n"
-                  + gen_labeled_message([a, expected, actual],
-                                        ["A: ", "Expected: ", "You returned: "])
-                  + "Try again!")
+        matrix_equal(actual, expected)
 
 # ------------------------------------------------------
 def transpose_ref(a):
@@ -340,15 +332,11 @@ def test_transpose(fun):
     for i in range(10):
         a = gen_complex_matrix()
         expected = transpose_ref(a)
-        log_message = f"Testing {a=}"
+        log_message = f"Testing\n{format_matrix(a, 'a: ')}"
         actual = fun(a)
         if actual == None:
             raise ValueError("Your function must return a value!")
-        if not matrix_equal(actual, expected):
-            raise ValueError("Unexpected result of a transpose:\n"
-                  + gen_labeled_message([a, expected, actual],
-                                        ["A: ", "Expected: ", "You returned: "])
-                  + "Try again!")
+        matrix_equal(actual, expected)
 
 # ------------------------------------------------------
 def conjugate_ref(a):
@@ -366,15 +354,11 @@ def test_conjugate(fun):
     for i in range(10):
         a = gen_complex_matrix()
         expected = conjugate_ref(a)
-        log_message = f"Testing {a=}"
+        log_message = f"Testing\n{format_matrix(a, 'a: ')}"
         actual = fun(a)
         if actual == None:
             raise ValueError("Your function must return a value!")
-        if not matrix_equal(actual, expected):
-            raise ValueError("Unexpected result of matrix conjugate:\n"
-                  + gen_labeled_message([a, expected, actual],
-                                        ["A: ","Expected: ","You returned: "])
-                  + "Try again!")
+        matrix_equal(actual, expected)
 
 # ------------------------------------------------------
 def adjoint_ref(a):
@@ -386,15 +370,11 @@ def test_adjoint(fun):
     for i in range(10):
         a = gen_complex_matrix()
         expected = adjoint_ref(a)
-        log_message = f"Testing {a=}"
+        log_message = f"Testing\n{format_matrix(a, 'a: ')}"
         actual = fun(a)
         if actual == None:
             raise ValueError("Your function must return a value!")
-        if not matrix_equal(actual, expected):
-            raise ValueError("Unexpected result of adjoint operation:\n"
-                  + gen_labeled_message([a, expected, actual],
-                                        ["A: ","Expected: ","You returned: "])
-                  + "Try again!")
+        matrix_equal(actual, expected)
 
 # ------------------------------------------------------
 # Projection operator - returns (<v,w>/<v,v>)*v
@@ -408,7 +388,7 @@ def append_vector(m,v):
 
 # Generates a unitary matrix via the Gram-Schmidt process
 def gen_unitary_matrix(n = -1):
-    if n == -1: n = r.randint(1, 5)
+    if n == -1: n = randint(1, 5)
     temp = gen_complex_matrix(n, n)
     
     # Split the generated matrix into vectors
@@ -457,19 +437,17 @@ def test_is_matrix_unitary(fun):
         elif testId % 2 == 0:
             a = gen_unitary_matrix()
         else:
-            n = r.randint(1,5)
+            n = randint(1,5)
             a = gen_complex_matrix(n,n)
         expected = is_matrix_unitary_ref(a)
-        log_message = f"Testing {a=}"
+        log_message = f"Testing\n{format_matrix(a, 'a: ')}"
         actual = fun(a)
         if actual == None:
             raise ValueError("Your function must return a value!")
         if actual != expected:
-            raise ValueError("Unexpected result:\n"
-                  + gen_matrix_message([a],
-                                       ["Matrix ", (" is " if expected else " is not ")
+            raise ValueError("Unexpected result. Matrix a " + ("is " if expected else "is not ")
                                                    + "unitary, but misidentified as " 
-                                                   + ("unitary" if actual else "not unitary")]))
+                                                   + ("unitary" if actual else "not unitary"))
 
 # ------------------------------------------------------
 def inner_prod_ref(v, w):
@@ -482,7 +460,7 @@ def test_inner_prod(fun):
         v = gen_complex_matrix(w = 1)
         w = gen_complex_matrix(len(v), 1)
         expected = inner_prod_ref(v, w)
-        log_message = f"Testing {v=} {w=}"
+        log_message = f"Testing\n{format_matrix(v, 'v: ')}\n{format_matrix(w, 'w: ')}"
         actual = fun(v, w)
         if type(actual) == list:
             raise TypeError("You should return a number, not a matrix")
@@ -490,7 +468,6 @@ def test_inner_prod(fun):
             raise ValueError("Your function must return a value!")
         if actual != approx(expected):
             raise ValueError("Unexpected result of inner product:\n"
-                  + gen_labeled_message([v, w], ["V: ", "W: "])
                   + f"Expected: {expected:.3f}\n\n"
                   + f"You returned: {actual:.3f}\n\nTry again!")
 
@@ -508,14 +485,11 @@ def test_normalize(fun):
             v = gen_complex_matrix(w = 1)
             norm = inner_prod_ref(v, v)
         expected = normalize_ref(v)
-        log_message = f"Testing {v=}"
+        log_message = f"Testing\n{format_matrix(v, 'v: ')}"
         actual = fun(v)
         if actual == None:
             raise ValueError("Your function must return a value!")
-        if not matrix_equal(actual, expected):
-            raise ValueError("Unexpected result of normalization:\n"
-                  + gen_labeled_message([v, expected, actual], ["V: ", "Expected: ", "You returned: "])
-                  + "Try again!")
+        matrix_equal(actual, expected)
 
 # ------------------------------------------------------
 def outer_prod_ref(v, w):
@@ -528,15 +502,11 @@ def test_outer_prod(fun):
         v = gen_complex_matrix(w = 1)
         w = gen_complex_matrix(w = 1)
         expected = outer_prod_ref(v, w)
-        log_message = f"Testing {v=} {w=}"
+        log_message = f"Testing\n{format_matrix(v, 'v: ')}\n{format_matrix(w, 'w: ')}"
         actual = fun(v, w)
         if actual == None:
             raise ValueError("Your function must return a value!")
-        if not matrix_equal(actual, expected):
-            raise ValueError("Unexpected result of outer product:\n"
-                  + gen_labeled_message([v, w, expected, actual],
-                                        ["V: ", "W: ", "Expected: ", "You returned: "])
-                  + "Try again!")
+        matrix_equal(actual, expected)
 
 # ------------------------------------------------------
 def tensor_product_ref(a, b):
@@ -567,12 +537,8 @@ def test_tensor_product(fun):
             a = gen_complex_matrix()
             b = gen_complex_matrix()
         expected = tensor_product_ref(a, b)
-        log_message = f"Testing {a=} {b=}"
+        log_message = f"Testing\n{format_matrix(a, 'a: ')}\n{format_matrix(b, 'b: ')}"
         actual = fun(a, b)
         if actual == None:
             raise ValueError("Your function must return a value!")
-        if not matrix_equal(actual, expected):
-            raise ValueError("Unexpected result of tensor product:\n"
-                  + gen_labeled_message([a, b, expected, actual],
-                                        ["A: ", "B: ", "Expected: ", "You returned: "])
-                  + "Try again!")
+        matrix_equal(actual, expected)
