@@ -265,11 +265,11 @@ def test_discretize_probabilities(fun):
         sum_dp = 0
         for p, dp in zip(probs, discrete_probs):
             if not isinstance(dp, int):
-                raise ValueError(f"Each element of the returned list should be an integer, got {dp}")
+                raise TypeError(f"Each element of the returned list should be an integer, got {type(dp).__name__}")
             if dp < 0 or dp > p2b:
                 raise ValueError(f"Each element of the returned list should be between 0 and {p2b}, got {dp}")
             if abs(dp / p2b - p) > 1 / p2b:
-                raise ValueError(f"Each element of the returned list, divided by {p2b} should be within {1 / p2b} of its input counterpart. "
+                raise ValueError(f"Each element of the returned list divided by {p2b} should be within {1 / p2b} of its input counterpart. "
                                  f"For {p}, got {dp / p2b}")
             sum_dp += dp
 
@@ -438,7 +438,7 @@ def check_data_loader(
     qpu = QPU(filters=BIT_DEFAULT)
     data_loader = qbk_class()
     # Run the test on every input basis state
-    for j in range(2 ** n_bits_index):
+    for j in range(1 << n_bits_index):
         # Reset QPU and allocate the registers
         qpu.reset(n_bits_index + n_bits_target + 1)
         index = Qubits(n_bits_index, "index", qpu)
