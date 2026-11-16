@@ -73,11 +73,11 @@ def check_state_vector(
     if num_qubits_after > n_qubits:
         raise ValueError("Any auxiliary qubits allocated should be returned to the |0⟩ state and released")
 
-    if any([abs(amp) > 1e-9 for amp in actual_vector[2 ** n_qubits:]]):
+    if any([abs(amp) > 1e-9 for amp in actual_vector[1 << n_qubits:]]):
         raise ValueError("Any auxiliary qubits allocated should be returned to the |0⟩ state and released")
     
     # Keep only the amplitudes of the main qubits
-    actual_vector = actual_vector[:2 ** n_qubits]
+    actual_vector = actual_vector[:1 << n_qubits]
 
     if actual_vector != approx(expected_vector):
         raise ValueError("State vectors should be equal\n"
@@ -199,7 +199,7 @@ def test_naivestateprep(qbk_class):
     seed(42)
     for n in range(3, 5):
         for _ in range(10):
-            amps = [uniform(-1.0, 1.0) for _ in range(2 ** n)]
+            amps = [uniform(-1.0, 1.0) for _ in range(1 << n)]
             norm = sqrt(sum(aj ** 2 for aj in amps))
             a = [aj / norm for aj in amps]
             tests.append((n, a))
@@ -487,7 +487,7 @@ def test_aliasstateswap(qbk_class):
         qpu = QPU(filters=BIT_DEFAULT)
         swapper = qbk_class()
         for input_state_reg, input_alias, input_threshold, input_coin_toss in product(
-            range(2 ** n), range(2 ** n), range(2 ** b), range(2 ** b)):
+            range(1 << n), range(1 << n), range(1 << b), range(1 << b)):
 
             log_message = f"Testing {n=}, {b=}"
             log_message += f"\nError for state_reg={input_state_reg}, alias={input_alias}, threshold={input_threshold}, coin_toss={input_coin_toss}: "
