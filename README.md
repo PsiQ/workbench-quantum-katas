@@ -12,7 +12,7 @@ If you're starting with a fresh environment, you'll need to install `pytest` and
 pip install psiqdk pytest jupyter
 ```
 
-Another option is to use GitHub Codespaces. From the Quantum Katas repository [home page](https://github.com/PsiQ/workbench-quantum-katas), click the green `<> Code` button, switch from `Local` to `Codespaces`, and then click the plus to create a codespace on the main branch. If you do not see the `Codespaces` option, make sure that you are logged in to GitHub. Please note that it may take a few minutes the first time the codespace is created because it also installs Python and the required modules. [Click here](https://github.com/features/codespaces) to learn more about GitHub Codespaces, as it is the user's responsibility to maintain and delete codespaces.
+Another option is to use GitHub Codespaces. From the Quantum Katas repository [home page](https://github.com/PsiQ/workbench-quantum-katas), click the green `<> Code` button, switch from `Local` to `Codespaces`, and then click the plus to create a codespace on the main branch. If you do not see the `Codespaces` option, make sure that you are logged in to GitHub. Please note that it may take a few minutes the first time the codespace is created because it also installs Python and the required modules. [Learn more about GitHub Codespaces](https://github.com/features/codespaces), as it is the user's responsibility to maintain and delete codespaces.
 
 ## User workflow
 
@@ -74,7 +74,7 @@ If you can't come up with a solution on your own, you can look up the explained 
 
 ### Quantum simulation toolbox
 
-* [Preparing arbitrary quantum states](./ArbitraryStatePreparation/ArbitraryStatePreparation.ipynb). Learn to prepare arbitrary quantum states (dense states without simple internal structure).
+* [Preparing arbitrary quantum states](./ArbitraryStatePreparation/ArbitraryStatePreparation_1_Rotations.ipynb). Learn to prepare arbitrary quantum states (dense states without simple internal structure).
 * [Linear combination of unitaries and block encoding](./LCUBlockEncoding/LCUBlockEncoding.ipynb). Learn about encoding non-unitary operators as a sub-block of a larger unitary operator.
 * [Quantum phase estimation of a qubitized Hamiltonian](./QubitizedHamiltonian/QubitizedHamiltonianQPE_1_Hamiltonian.ipynb). Follow the end-to-end process of building a quantum simulation solution, from mapping the problem to dynamics of a physical system to solving it on a quantum computer, from writing and validating the code to analyzing its resource requirements.
 
