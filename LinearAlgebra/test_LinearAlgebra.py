@@ -1,6 +1,8 @@
 from cmath import sqrt
+from copy import deepcopy
 from random import randint, random
 from warnings import catch_warnings
+from itertools import product
 
 from pytest import approx, fail, mark
 
@@ -59,9 +61,9 @@ def gen_complex_matrix(h = -1, w = -1):
     if h == -1: h = randint(1, 5)
     if w == -1: w = randint(1, 5)
     ans = []
-    for i in range(h):
+    for _ in range(h):
         temp = []
-        for j in range(w):
+        for _ in range(w):
             temp.append(randcomplex())
         ans.append(temp)
     return ans
@@ -118,6 +120,32 @@ def gen_matrix_message(matrices, strings):
     
     return ans
 
+# Formats complex numbers for easy printing
+def format_complex(num: complex):
+    ans = ""
+    if num.real >= 0:
+        ans += ' '
+    ar = abs(num.real)
+    ai = abs(num.imag)
+    if ar < 10:
+        ans += f"{num.real:.3f}"
+    elif ar < 100:
+        ans += f"{num.real:.2f}"
+    else:
+        ans += str(round(num.real))
+    
+    if num.imag >= 0:
+        ans += '+'
+    
+    if ai < 10:
+        ans += f"{num.imag:.3f}"
+    elif ai < 100:
+        ans += f"{num.imag:.2f}"
+    else:
+        ans += str(round(num.imag)) 
+    ans += 'i '
+    return ans
+
 # Formats the row of a matrix to be evenly spaced
 def format_row(row):
     ans = ""
@@ -125,30 +153,7 @@ def format_row(row):
         if num == ...:
             ans += "     ...     "
             continue
-        
-        if num.real >= 0:
-            ans += ' '
-        
-        ar = abs(num.real)
-        ai = abs(num.imag)
-        if ar < 10:
-            ans += f"{num.real:.3f}"
-        elif ar < 100:
-            ans += f"{num.real:.2f}"
-        else:
-            ans += str(round(num.real))
-        
-        if num.imag >= 0:
-            ans += '+'
-        
-        if ai < 10:
-            ans += f"{num.imag:.3f}"
-        elif ai < 100:
-            ans += f"{num.imag:.2f}"
-        else:
-            ans += str(round(num.imag))
-        
-        ans += 'i '
+        ans += format_complex(num)
     return ans
 
 def gen_labeled_message(matrices, labels):
@@ -175,53 +180,34 @@ def format_matrix(matrix, label):
 # ------------------------------------------------------
 # Checks that two matrices are (approximately) equal to each other
 def matrix_equal(act, exp):
-    if act == ... or exp == ...:
-        raise ValueError("Your function must return a value!")
+    if act is None:
+        raise ValueError("Your function returned None, expected a matrix")
+    if act == ...:
+        raise ValueError("Your function returned {act}, expected a matrix")
     
     h = len(act)
     w = len(act[0])
     # Check that sizes match
     if h != len(exp) or w != len(exp[0]):
-        raise ValueError("Unexpected result:\n"
-                  + gen_labeled_message([exp, act],
-                                        ["Expected: ", "You returned: "])
-                  + "Try again!")
+        raise ValueError(f"The dimensions of the returned matrix were {h} x {w}, expected {len(exp)} x {len(exp[0])}\n"
+            + gen_labeled_message([exp, act], ["Expected: ", "You returned: "]))
     
     for i in range(h):
         # Check that the length of each row matches the expectation
         if w != len(act[i]):
-            raise ValueError("Unexpected result:\n"
-                    + gen_labeled_message([exp, act],
-                                            ["Expected: ", "You returned: "])
-                    + "Try again!")
+            raise ValueError(f"The returned matrix should be rectangular.\nThe number of elements in row {i} are {len(act[i])}, expected {w}\n"
+                + gen_labeled_message([exp, act], ["Expected: ", "You returned: "]))
         for j in range(w):
             if act[i][j] == ... or act[i][j] != approx(exp[i][j]):
-                raise ValueError("Unexpected result:\n"
-                        + gen_labeled_message([exp, act],
-                                                ["Expected: ", "You returned: "])
-                        + "Try again!")
+                raise ValueError("The element in row {i} and column {j} was {act[i][j]}, expected {exp[i][j]}\n"
+                    + gen_labeled_message([exp, act], ["Expected: ", "You returned: "]))
     return True
-
-# ------------------------------------------------------
-# Makes a copy of the target matrix
-def matrix_copy(mat):
-    ans = []
-    for row in mat:
-        ans.append(row[:])
-    return ans
-
-# Creates an n by m matrix filled with 0s
-def create_empty_matrix(n, m):
-    ans = []
-    for i in range(n):
-        ans.append([0] * m)
-    return ans
 
 # ------------------------------------------------------
 def matrix_add_ref(a, b):
     n = len(a)
     m = len(a[0])
-    ans = create_empty_matrix(n, m)
+    ans = [[0] * m for _ in range(n)]
     for i in range(n):
         for j in range(m):
             ans[i][j] = a[i][j] + b[i][j]
@@ -231,14 +217,12 @@ def matrix_add_ref(a, b):
 @mark.parametrize("fun", [ref.matrix_add] if ref_available else [])
 def test_matrix_add(fun):
     global log_message
-    for i in range(10):
-        a = gen_complex_matrix()
-        b = gen_complex_matrix(len(a), len(a[0]))
+    for n, m in product(range(1,4), range(1,4)):
+        a = gen_complex_matrix(n, m)
+        b = gen_complex_matrix(n, m)
         expected = matrix_add_ref(a, b)
         log_message = f"Testing\n{format_matrix(a, 'a: ')}\n{format_matrix(b,'b: ')}\n"
         actual = fun(a, b)
-        if actual == None:
-            raise ValueError("Your function must return a value!")
         matrix_equal(actual, expected)
 
 # ------------------------------------------------------
@@ -254,14 +238,12 @@ def scalar_mult_ref(x, a):
 @mark.parametrize("fun", [ref.scalar_mult] if ref_available else [])
 def test_scalar_mult(fun):
     global log_message
-    for i in range(10):
-        a = gen_complex_matrix()
+    for n, m in product(range(1, 4), range(1, 4)):
+        a = gen_complex_matrix(n, m)
         x = randcomplex()
         expected = scalar_mult_ref(x, a)
-        log_message = f"Testing {x=}\n{format_matrix(a, 'a: ')}"
+        log_message = f"Testing x={format_complex(x)}\n{format_matrix(a, 'a: ')}"
         actual = fun(x, a)
-        if actual == None:
-            raise ValueError("Your function must return a value!")
         matrix_equal(actual, expected)
 
 # ------------------------------------------------------
@@ -269,7 +251,7 @@ def matrix_mult_ref(a, b):
     h = len(a)
     common = len(a[0]) # = len(b)
     w = len(b[0])
-    ans = create_empty_matrix(h, w)
+    ans = [[0] * w for _ in range(h)]
     for i in range(h):
         for j in range(w):
             for k in range(common):
@@ -279,14 +261,12 @@ def matrix_mult_ref(a, b):
 @mark.parametrize("fun", [ref.matrix_mult] if ref_available else [])
 def test_matrix_mult(fun):
     global log_message
-    for i in range(10):
-        a = gen_complex_matrix()
+    for n, m in product(range(1,4), range(1,4)):
+        a = gen_complex_matrix(n, m)
         b = gen_complex_matrix(len(a[0]))
         expected = matrix_mult_ref(a, b)
         log_message = f"Testing\n{format_matrix(a, 'a: ')}\n{format_matrix(b, 'b: ')}"
         actual = fun(a, b)
-        if actual == None:
-            raise ValueError("Your function must return a value!")
         matrix_equal(actual, expected)
 
 # ------------------------------------------------------
@@ -301,7 +281,7 @@ def matrix_inverse_ref(m):
 @mark.parametrize("fun", [ref.matrix_inverse] if ref_available else [])
 def test_matrix_inverse(fun):
     global log_message
-    for i in range(10):
+    for _ in range(10):
         a = None
         det = 0
         while det == 0:
@@ -310,8 +290,6 @@ def test_matrix_inverse(fun):
         expected = matrix_inverse_ref(a)
         log_message = f"Testing\n{format_matrix(a, 'a: ')}"
         actual = fun(a)
-        if actual == None:
-            raise ValueError("Your function must return a value!")
         matrix_equal(actual, expected)
 
 # ------------------------------------------------------
@@ -329,13 +307,13 @@ def transpose_ref(a):
 @mark.parametrize("fun", [ref.transpose] if ref_available else [])
 def test_transpose(fun):
     global log_message
-    for i in range(10):
+    # for n, m in product(range(1,4), range(1,4)):
+    for _ in range(10):
+        # a = gen_complex_matrix(n, m)
         a = gen_complex_matrix()
         expected = transpose_ref(a)
         log_message = f"Testing\n{format_matrix(a, 'a: ')}"
         actual = fun(a)
-        if actual == None:
-            raise ValueError("Your function must return a value!")
         matrix_equal(actual, expected)
 
 # ------------------------------------------------------
@@ -351,13 +329,11 @@ def conjugate_ref(a):
 @mark.parametrize("fun", [ref.conjugate] if ref_available else [])
 def test_conjugate(fun):
     global log_message
-    for i in range(10):
-        a = gen_complex_matrix()
+    for n, m in product(range(1,4), range(1,4)):
+        a = gen_complex_matrix(n, m)
         expected = conjugate_ref(a)
         log_message = f"Testing\n{format_matrix(a, 'a: ')}"
         actual = fun(a)
-        if actual == None:
-            raise ValueError("Your function must return a value!")
         matrix_equal(actual, expected)
 
 # ------------------------------------------------------
@@ -367,13 +343,11 @@ def adjoint_ref(a):
 @mark.parametrize("fun", [ref.adjoint] if ref_available else [])
 def test_adjoint(fun):
     global log_message
-    for i in range(10):
-        a = gen_complex_matrix()
+    for n, m in product(range(1,4), range(1,4)):
+        a = gen_complex_matrix(n, m)
         expected = adjoint_ref(a)
         log_message = f"Testing\n{format_matrix(a, 'a: ')}"
         actual = fun(a)
-        if actual == None:
-            raise ValueError("Your function must return a value!")
         matrix_equal(actual, expected)
 
 # ------------------------------------------------------
@@ -401,7 +375,7 @@ def gen_unitary_matrix(n = -1):
     
     vectors2 = []
     for i in range(n):
-        v = matrix_copy(vectors[i])
+        v = deepcopy(vectors[i])
         for j in range(i-1,-1,-1):
             v = matrix_add_ref(v, scalar_mult_ref(-1, projection(vectors2[j], vectors[i])))
         vectors2.append(v)
@@ -442,8 +416,12 @@ def test_is_matrix_unitary(fun):
         expected = is_matrix_unitary_ref(a)
         log_message = f"Testing\n{format_matrix(a, 'a: ')}"
         actual = fun(a)
-        if actual == None:
-            raise ValueError("Your function must return a value!")
+        if actual is None:
+            raise ValueError("Your function returned None, expected a boolean")
+        if not isinstance(actual, bool): 
+            raise TypeError(f"You returned a value of type {type(actual).__name__}, expected type `bool`")
+        if actual == ...:
+            raise ValueError(f"Your function returned {actual}, expected a boolean")
         if actual != expected:
             raise ValueError("Unexpected result. Matrix a " + ("is " if expected else "is not ")
                                                    + "unitary, but misidentified as " 
@@ -456,20 +434,22 @@ def inner_prod_ref(v, w):
 @mark.parametrize("fun", [ref.inner_prod] if ref_available else [])
 def test_inner_prod(fun):
     global log_message
-    for i in range(10):
+    for _ in range(10):
         v = gen_complex_matrix(w = 1)
         w = gen_complex_matrix(len(v), 1)
         expected = inner_prod_ref(v, w)
         log_message = f"Testing\n{format_matrix(v, 'v: ')}\n{format_matrix(w, 'w: ')}"
         actual = fun(v, w)
+        if actual is None:
+            raise ValueError("Your function must return a value")
         if type(actual) == list:
             raise TypeError("You should return a number, not a matrix")
-        if actual == None or actual == ...:
-            raise ValueError("Your function must return a value!")
+        if actual == ...:
+            raise ValueError("Your function returned {actual}, expected a value")
         if actual != approx(expected):
             raise ValueError("Unexpected result of inner product:\n"
                   + f"Expected: {expected:.3f}\n\n"
-                  + f"You returned: {actual:.3f}\n\nTry again!")
+                  + f"You returned: {actual:.3f}")
 
 # ------------------------------------------------------
 def normalize_ref(v):
@@ -478,7 +458,7 @@ def normalize_ref(v):
 @mark.parametrize("fun", [ref.normalize] if ref_available else [])
 def test_normalize(fun):
     global log_message
-    for i in range(10):
+    for _ in range(10):
         v = None
         norm = 0
         while norm == 0:
@@ -487,8 +467,6 @@ def test_normalize(fun):
         expected = normalize_ref(v)
         log_message = f"Testing\n{format_matrix(v, 'v: ')}"
         actual = fun(v)
-        if actual == None:
-            raise ValueError("Your function must return a value!")
         matrix_equal(actual, expected)
 
 # ------------------------------------------------------
@@ -498,15 +476,14 @@ def outer_prod_ref(v, w):
 @mark.parametrize("fun", [ref.outer_prod] if ref_available else [])
 def test_outer_prod(fun):
     global log_message
-    for i in range(10):
+    for _ in range(10):
         v = gen_complex_matrix(w = 1)
         w = gen_complex_matrix(w = 1)
         expected = outer_prod_ref(v, w)
         log_message = f"Testing\n{format_matrix(v, 'v: ')}\n{format_matrix(w, 'w: ')}"
         actual = fun(v, w)
-        if actual == None:
-            raise ValueError("Your function must return a value!")
         matrix_equal(actual, expected)
+    # fail("outer_product end")
 
 # ------------------------------------------------------
 def tensor_product_ref(a, b):
@@ -531,14 +508,13 @@ def tensor_product_ref(a, b):
 @mark.parametrize("fun", [ref.tensor_product] if ref_available else [])
 def test_tensor_product(fun):
     global log_message
-    for i in range(10):
+    for n, m in product(range(1,4), range(1,4)):
+    # for _ in range(10):
         (a, b) = ([[1, 1, 1]], [[1, 1, 1]])
         while len(a[0]) * len(b[0]) >= 8:
-            a = gen_complex_matrix()
+            a = gen_complex_matrix(n, m)
             b = gen_complex_matrix()
         expected = tensor_product_ref(a, b)
         log_message = f"Testing\n{format_matrix(a, 'a: ')}\n{format_matrix(b, 'b: ')}"
         actual = fun(a, b)
-        if actual == None:
-            raise ValueError("Your function must return a value!")
         matrix_equal(actual, expected)
