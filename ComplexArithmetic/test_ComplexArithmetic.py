@@ -67,7 +67,7 @@ def assert_tuple(result):
         raise ValueError("Your function must return a value!")
     if not type(result) is tuple:
         raise TypeError(
-            "Your function must return a tuple, returned " + type(result).__name__ + "."
+            f"Your function must return a tuple, returned {type(result).__name__}."
         )
     if result[0] == ... or result[1] == ...:
         raise ValueError(
@@ -75,8 +75,7 @@ def assert_tuple(result):
         )
     if len(result) != 2:
         raise ValueError(
-            "Your function must return a tuple of length 2, but returned tuple is of length "
-            + str(len(result))
+            "Your function must return a tuple of length 2, but returned tuple is of length {len(result)}"
         )
 
 
@@ -134,7 +133,7 @@ def test_imaginary_power(fun):
             raise ValueError(f"Your function must return a value!")
         if expected != actual:
             raise ValueError(
-                f"Result of exponentiation doesn't seem to match expected value: expected i^{n} = {expected}, got {actual}"
+                f"Result of exponentiation doesn't match expected value: expected i^{n} = {expected}, got {actual}"
             )
 
 
@@ -150,7 +149,7 @@ def test_complex_add(fun):
         x = prep_random_cartesian()
         y = prep_random_cartesian()
         expected = complex_add_ref(x, y)
-        log_message = f"Testing x={format_cartesian(x)} y={format_cartesian=}"
+        log_message = f"Testing x={format_cartesian(x)}, y={format_cartesian=}"
         actual = fun(x, y)
         assert_cartesian(
             expected,
@@ -241,7 +240,7 @@ def test_modulus(fun):
         if actual is None:
             raise ValueError("Your function must return a value!")
         if not (type(actual) is float or type(actual) is int):
-            raise TypeError("Your function must return a number, returned " + type(actual).__name__ + ".")
+            raise TypeError(f"Your function must return a number, returned {type(actual).__name__}.")
         if actual != approx(expected):
             raise ValueError("Modulus doesn't match expected value "
                   + f"{expected:.3f}, got {actual:.3f}")
