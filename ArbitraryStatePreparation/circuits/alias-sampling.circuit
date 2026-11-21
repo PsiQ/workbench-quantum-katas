@@ -1,0 +1,365 @@
+{
+  "record_type": "psiquantum.circuit",
+  "title": "Alias Sampling",
+  "locked": true,
+  "style": {
+    "registers": {
+      "register": {
+        "expanded": true,
+        "enumerate": "decimal"
+      }
+    },
+    "operations": {
+      "routine": {
+        "expanded": true
+      }
+    }
+  },
+  "copyright": "Babbush, Ryan, et al. “Encoding Electronic Spectra in Quantum Circuits with Linear T Complexity.” Physical Review X, vol. 8, no. 4, 23 Oct. 2018",
+  "record_format": 3,
+  "modified": "2026-11-05T03:57:03.049Z",
+  "root": {
+    "id": "__ROOT__",
+    "type": "__ROOT__",
+    "input_registers": "prep[0]",
+    "children": [
+      {
+        "id": "state",
+        "type": "register",
+        "label": "\\text{state}",
+        "size": 2,
+        "style": {
+          "show_rail_labels": false,
+          "expanded": true,
+          "collapsed_marker_el": {
+            "visible": true
+          }
+        },
+        "expanded": true
+      },
+      {
+        "id": "aliases",
+        "type": "register",
+        "label": "\\text{aliases}",
+        "size": 2,
+        "style": {
+          "show_rail_labels": true,
+          "expanded": true,
+          "collapsed_marker_el": {
+            "visible": true
+          }
+        },
+        "expanded": true
+      },
+      {
+        "id": "thresholds",
+        "type": "register",
+        "label": "\\text{thresholds}",
+        "size": 2,
+        "style": {
+          "show_rail_labels": true,
+          "expanded": true,
+          "collapsed_marker_el": {
+            "visible": true
+          }
+        },
+        "expanded": true
+      },
+      {
+        "id": "coin_toss",
+        "type": "register",
+        "label": "\\text{coin toss}",
+        "size": 2,
+        "style": {
+          "expanded": false,
+          "collapsed_marker_el": {
+            "visible": true
+          }
+        },
+        "expanded": true
+      },
+      {
+        "id": "prep2",
+        "type": "routine",
+        "name": "prep",
+        "label": "\\textbf{Prepare}",
+        "input_registers": "state",
+        "tags": [
+          "red",
+          "border-red",
+          "expand-text-above"
+        ],
+        "style": {
+          "expanded": false,
+          "box_el": {
+            "stroke": {
+              "border_style": "thin"
+            }
+          }
+        },
+        "expanded": false,
+        "children": [
+          {
+            "id": "gate",
+            "type": "gate",
+            "gate_type": "hadamard",
+            "input_registers": "state[*]"
+          }
+        ]
+      },
+      {
+        "id": "qrom",
+        "type": "routine",
+        "name": "qrom",
+        "label": "\\begin{gather}\n\\textbf{Load} \\\\\n\\textbf{aliases}\n\\end{gather}",
+        "input_registers": "state,aliases[0],aliases[1]",
+        "tags": [
+          "orange",
+          "border-orange",
+          "expand-text-above"
+        ],
+        "style": {
+          "expanded": false
+        },
+        "expanded": false,
+        "children": [
+          {
+            "id": "gate3",
+            "type": "gate",
+            "gate_type": "cnot",
+            "control_type": "control.multiplexor",
+            "input_registers": "aliases[0:2]",
+            "controlled_by": "!state[0],state[1]"
+          }
+        ]
+      },
+      {
+        "id": "qrom2",
+        "type": "routine",
+        "name": "qrom",
+        "label": "\\begin{gather}\n\\textbf{Load} \\\\\n\\textbf{thresholds}\n\\end{gather}",
+        "input_registers": "state,aliases[0],aliases[1]",
+        "tags": [
+          "orange",
+          "border-orange",
+          "expand-text-above"
+        ],
+        "style": {
+          "expanded": false
+        },
+        "expanded": false,
+        "children": [
+          {
+            "id": "gate17",
+            "type": "gate",
+            "gate_type": "cnot",
+            "control_type": "control.multiplexor",
+            "input_registers": "thresholds",
+            "controlled_by": "state[0],!state[1]"
+          },
+          {
+            "id": "gate18",
+            "type": "gate",
+            "gate_type": "cnot",
+            "control_type": "control.multiplexor",
+            "input_registers": "thresholds[0]",
+            "controlled_by": "!state[0],state[1]"
+          },
+          {
+            "id": "gate19",
+            "type": "gate",
+            "gate_type": "cnot",
+            "control_type": "control.multiplexor",
+            "input_registers": "thresholds[1]",
+            "controlled_by": "state"
+          }
+        ]
+      },
+      {
+        "id": "coin_toss2",
+        "type": "routine",
+        "name": "coin_toss",
+        "label": "\\text{Coin Toss}",
+        "input_registers": "coin_toss",
+        "style": {
+          "expanded": true
+        },
+        "expanded": false,
+        "tags": [
+          "red"
+        ],
+        "children": [
+          {
+            "id": "gate5",
+            "type": "gate",
+            "gate_type": "hadamard",
+            "input_registers": "coin_toss[*]"
+          }
+        ]
+      },
+      {
+        "id": "sampling",
+        "type": "routine",
+        "name": "sampling",
+        "label": "\\textbf{Conditional swap}",
+        "input_registers": "state,aliases,coin_toss,qbk_anc",
+        "tags": [
+          "purple",
+          "border-purple",
+          "expand-text-above"
+        ],
+        "style": {
+          "box_el": {
+            "border": "1 dashed"
+          },
+          "expanded": false
+        },
+        "expanded": true,
+        "children": [
+          {
+            "id": "column",
+            "type": "column",
+            "input_registers": "*",
+            "children": [
+              {
+                "id": "qbk_anc",
+                "type": "register",
+                "label": "\\text{qbk\\_anc}",
+                "size": 2,
+                "style": {
+                  "rail_state": "free",
+                  "show_register_label": false,
+                  "show_rail_labels": false,
+                  "expanded": true,
+                  "collapsed_marker_el": {
+                    "visible": false
+                  },
+                  "margin": "t: 20, l: 5, b: 10, r: 5"
+                },
+                "expanded": true
+              }
+            ]
+          },
+          {
+            "id": "compare2",
+            "type": "routine",
+            "name": "compare",
+            "label": "\\text{CompareGE}",
+            "input_registers": "thresholds,coin_toss,qbk_anc",
+            "tags": [
+              "expand-text-above"
+            ],
+            "style": {
+              "expanded": true
+            },
+            "expanded": false,
+            "children": [
+              {
+                "id": "gate6",
+                "type": "gate",
+                "gate_type": "lelbow",
+                "input_registers": "qbk_anc[0]",
+                "controlled_by": "thresholds[0],!coin_toss[0]"
+              },
+              {
+                "id": "gate7",
+                "type": "gate",
+                "gate_type": "cnot",
+                "input_registers": "thresholds[1],coin_toss[1]",
+                "controlled_by": "qbk_anc[0]"
+              },
+              {
+                "id": "gate8",
+                "type": "gate",
+                "gate_type": "lelbow",
+                "input_registers": "qbk_anc[1]",
+                "controlled_by": "thresholds[1],!coin_toss[1]"
+              },
+              {
+                "id": "gate9",
+                "type": "gate",
+                "gate_type": "cnot",
+                "input_registers": "qbk_anc[1]",
+                "controlled_by": "qbk_anc[0]"
+              }
+            ]
+          },
+          {
+            "id": "swap_up",
+            "type": "routine",
+            "name": "swap up",
+            "label": "\\textbf{Swap up}",
+            "input_registers": "aliases,state,qbk_anc[1]",
+            "tags": [
+              "border-red"
+            ],
+            "style": {
+              "expanded": false
+            },
+            "expanded": false,
+            "children": [
+              {
+                "id": "gate15",
+                "type": "gate",
+                "gate_type": "swap",
+                "input_registers": "aliases[0],state[0]",
+                "controlled_by": "~qbk_anc[1]"
+              },
+              {
+                "id": "gate16",
+                "type": "gate",
+                "gate_type": "swap",
+                "input_registers": "aliases[1],state[1]",
+                "controlled_by": "~qbk_anc[1]"
+              }
+            ]
+          },
+          {
+            "id": "compare†",
+            "type": "routine",
+            "name": "compare†",
+            "label": "\\text{CompareGE}\\dagger",
+            "input_registers": "thresholds,coin_toss,qbk_anc",
+            "tags": [
+              "expand-text-above"
+            ],
+            "style": {
+              "expanded": true
+            },
+            "expanded": false,
+            "children": [
+              {
+                "id": "gate11",
+                "type": "gate",
+                "gate_type": "cnot",
+                "input_registers": "qbk_anc[1]",
+                "controlled_by": "qbk_anc[0]"
+              },
+              {
+                "id": "gate12",
+                "type": "gate",
+                "gate_type": "relbow",
+                "input_registers": "qbk_anc[1]",
+                "controlled_by": "thresholds[1],!coin_toss[1]"
+              },
+              {
+                "id": "gate13",
+                "type": "gate",
+                "gate_type": "cnot",
+                "input_registers": "thresholds[1],coin_toss[1]",
+                "controlled_by": "qbk_anc[0]"
+              },
+              {
+                "id": "gate14",
+                "type": "gate",
+                "gate_type": "relbow",
+                "input_registers": "qbk_anc[0]",
+                "controlled_by": "thresholds[0],!coin_toss[0]"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
