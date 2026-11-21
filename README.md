@@ -37,7 +37,6 @@ If you can't come up with a solution on your own, you can look up the explained 
 ### Prerequisite math
 
 * [Complex arithmetic](./ComplexArithmetic/ComplexArithmetic.ipynb). Learn about imaginary and complex numbers which are used to describe quantum systems.
-
 * [Linear algebra](./LinearAlgebra/LinearAlgebra.ipynb). Learn the basics of linear algebra used in quantum computing.
 
 ### Single-qubit systems

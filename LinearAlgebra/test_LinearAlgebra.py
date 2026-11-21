@@ -14,7 +14,6 @@ try:
             import Workbook_LinearAlgebra as ref
     ref_available = True
 except ImportError:
-    fail("import error")
     ref_available = False
     # Skip all tests in this file - pytest checks reference solutions and that won't work without these imports
     pytestmark = mark.skip("No importnb/reference file available")
@@ -183,7 +182,7 @@ def matrix_equal(act, exp):
     if act is None:
         raise ValueError("Your function returned None, expected a matrix")
     if act == ...:
-        raise ValueError("Your function returned {act}, expected a matrix")
+        raise ValueError(f"Your function returned {act}, expected a matrix")
     
     h = len(act)
     w = len(act[0])
@@ -195,11 +194,11 @@ def matrix_equal(act, exp):
     for i in range(h):
         # Check that the length of each row matches the expectation
         if w != len(act[i]):
-            raise ValueError(f"The returned matrix should be rectangular.\nThe number of elements in row {i} are {len(act[i])}, expected {w}\n"
+            raise ValueError(f"The returned matrix should be rectangular.\nThe number of elements in row {i} is {len(act[i])}, expected {w}\n"
                 + gen_labeled_message([exp, act], ["Expected: ", "You returned: "]))
         for j in range(w):
             if act[i][j] == ... or act[i][j] != approx(exp[i][j]):
-                raise ValueError("The element in row {i} and column {j} was {act[i][j]}, expected {exp[i][j]}\n"
+                raise ValueError(f"The element in row {i} and column {j} was {act[i][j]}, expected {exp[i][j]}\n"
                     + gen_labeled_message([exp, act], ["Expected: ", "You returned: "]))
     return True
 
@@ -307,10 +306,8 @@ def transpose_ref(a):
 @mark.parametrize("fun", [ref.transpose] if ref_available else [])
 def test_transpose(fun):
     global log_message
-    # for n, m in product(range(1,4), range(1,4)):
-    for _ in range(10):
-        # a = gen_complex_matrix(n, m)
-        a = gen_complex_matrix()
+    for n, m in product(range(1,4), range(1,4)):
+        a = gen_complex_matrix(n, m)
         expected = transpose_ref(a)
         log_message = f"Testing\n{format_matrix(a, 'a: ')}"
         actual = fun(a)
@@ -423,9 +420,8 @@ def test_is_matrix_unitary(fun):
         if actual == ...:
             raise ValueError(f"Your function returned {actual}, expected a boolean")
         if actual != expected:
-            raise ValueError("Unexpected result. Matrix a " + ("is " if expected else "is not ")
-                                                   + "unitary, but misidentified as " 
-                                                   + ("unitary" if actual else "not unitary"))
+            raise ValueError(f"Unexpected result. Matrix a {'is' if expected else 'is not'} unitary, "
+                             + f"but misidentified as {'unitary' if actual else 'not unitary'}")
 
 # ------------------------------------------------------
 def inner_prod_ref(v, w):
@@ -509,7 +505,6 @@ def tensor_product_ref(a, b):
 def test_tensor_product(fun):
     global log_message
     for n, m in product(range(1,4), range(1,4)):
-    # for _ in range(10):
         (a, b) = ([[1, 1, 1]], [[1, 1, 1]])
         while len(a[0]) * len(b[0]) >= 8:
             a = gen_complex_matrix(n, m)
