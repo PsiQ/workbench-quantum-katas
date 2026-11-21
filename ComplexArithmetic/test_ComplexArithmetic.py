@@ -82,12 +82,15 @@ def assert_tuple(result):
 
 # Assert that verifies the output is a valid complex tuple, and checks that it matches expected output
 def assert_cartesian(expected, actual, message):
+
+    assert_tuple(actual)
     if actual != approx(expected):
         raise ValueError(message)
 
 
 # Assert that verifies the output is a valid polar tuple, and checks that it matches expected output
 def assert_polar(expected, actual, message):
+    assert_tuple(actual)
     (ar, atheta) = actual
     if ar == 0:
         if ar != approx(expected[0]):
@@ -103,9 +106,7 @@ def assert_polar(expected, actual, message):
 # Formats a complex number in Cartesian form neatly
 def format_cartesian(x):
     return (
-        f"{x[0]:.3f}"
-        + (" + " if x[1] >= 0 else " - ")
-        + f"{abs(x[1]):.3f}i"
+        f"{x[0]:.3f} {'+' if x[1] >= 0 else '-'} {abs(x[1]):.3f}i"
     )
 
 
@@ -151,12 +152,11 @@ def test_complex_add(fun):
         expected = complex_add_ref(x, y)
         log_message = f"Testing x={format_cartesian(x)} y={format_cartesian=}"
         actual = fun(x, y)
-        assert_tuple(actual)
         assert_cartesian(
             expected,
             actual,
             ValueError(
-                "Sum doesn't seem to match expected value.\nExpected "
+                "Sum doesn't match expected value.\nExpected "
                 + format_cartesian(expected)
                 + ", got "
                 + format_cartesian(actual)
@@ -176,11 +176,10 @@ def test_complex_mult(fun):
         x = prep_random_cartesian()
         y = prep_random_cartesian()
         expected = complex_mult_ref(x, y)
-        log_message = f"Testing x={format_cartesian(x)} y={format_cartesian(y)}"
+        log_message = f"Testing x={format_cartesian(x)}, y={format_cartesian(y)}"
         actual = fun(x, y)
-        assert_tuple(actual)
         assert_cartesian(expected, actual,
-                               ValueError("Product doesn't seem to match expected value.\nExpected "
+                               ValueError("Product doesn't match expected value.\nExpected "
                                + format_cartesian(expected)
                                + ", got "
                                + format_cartesian(actual)))
@@ -197,9 +196,8 @@ def test_conjugate(fun):
         log_message = f"Testing x={format_cartesian(x)}"
         expected = conjugate_ref(x)
         actual = fun(x)
-        assert_tuple(actual)
         assert_cartesian(expected, actual,
-                               ValueError("Conjugate doesn't seem to match expected value.\nExpected conjugate to be "
+                               ValueError("Conjugate doesn't match expected value.\nExpected conjugate to be "
                                + format_cartesian(expected)
                                + ", got "
                                + format_cartesian(actual)))
@@ -219,12 +217,11 @@ def test_complex_div(fun):
         y = (0, 0)
         while y == (0, 0):
             y = prep_random_cartesian()
-        log_message = f"Testing x={format_cartesian(x)} y={format_cartesian(y)}"
+        log_message = f"Testing x={format_cartesian(x)}, y={format_cartesian(y)}"
         expected = complex_div_ref(x, y)
         actual = fun(x, y)
-        assert_tuple(actual)
         assert_cartesian(expected, actual,
-                               ValueError("Quotient doesn't seem to match expected value.\nExpected "
+                               ValueError("Quotient doesn't match expected value.\nExpected "
                                + format_cartesian(expected)
                                + ", got "
                                + format_cartesian(actual)))
@@ -246,7 +243,7 @@ def test_modulus(fun):
         if not (type(actual) is float or type(actual) is int):
             raise TypeError("Your function must return a number, returned " + type(actual).__name__ + ".")
         if actual != approx(expected):
-            raise ValueError("Modulus doesn't seem to match expected value "
+            raise ValueError("Modulus doesn't match expected value "
                   + f"{expected:.3f}, got {actual:.3f}")
 
 # ------------------------------------------------------
@@ -262,9 +259,8 @@ def test_complex_exp(fun):
         log_message = f"Testing x={format_cartesian(x)}"
         expected = complex_exp_ref(x)
         actual = fun(x)
-        assert_tuple(actual)
         assert_cartesian(expected, actual,
-                               ValueError("Result of exponentiation doesn't seem to match expected value.\nExpected "
+                               ValueError("Result of exponentiation doesn't match expected value.\nExpected "
                                + format_cartesian(expected)
                                + ", got "
                                + format_cartesian(actual)))
@@ -283,12 +279,11 @@ def test_complex_exp_real(fun):
         if i == 0:
             base = 0
         x = prep_random_cartesian()
-        log_message = f"Testing r={base} x={format_cartesian(x)}"
+        log_message = f"Testing r={base}, x={format_cartesian(x)}"
         expected = complex_exp_real_ref(base, x)
         actual = fun(base, x)
-        assert_tuple(actual)
         assert_cartesian(expected, actual,
-                               ValueError("Result of exponentiation doesn't seem to match expected value.\nExpected "
+                               ValueError("Result of exponentiation doesn't match expected value.\nExpected "
                                + format_cartesian(expected)
                                + ", got "
                                + format_cartesian(actual)))
@@ -307,9 +302,8 @@ def test_polar_convert(fun):
         log_message = f"Testing x={format_polar(x)}"
         expected = polar_convert_ref(x)
         actual = fun(x)
-        assert_tuple(actual)
         assert_polar(expected, actual,
-                           ValueError("Polar conversion doesn't seem to match expected value.\nExpected "
+                           ValueError("Polar conversion doesn't match expected value.\nExpected "
                            + format_polar(expected)
                            + ", got "
                            + format_polar(actual)))
@@ -326,9 +320,8 @@ def test_cartesian_convert(fun):
         log_message = f"Testing x={format_polar(x)}"
         expected = cartesian_convert_ref(x)
         actual = fun(x)
-        assert_tuple(actual)
         assert_cartesian(expected, actual,
-                               ValueError("Cartesian conversion doesn't seem to match expected value.\nExpected "
+                               ValueError("Cartesian conversion doesn't match expected value.\nExpected "
                                + format_cartesian(expected)
                                + ", got "
                                + format_cartesian(actual)))
@@ -355,9 +348,8 @@ def test_polar_mult(fun):
         log_message = f"Testing x={format_polar(x)}, y={format_polar(y)}"
         expected = polar_mult_ref(x, y)
         actual = fun(x, y)
-        assert_tuple(actual)
         assert_polar(expected, actual,
-                           ValueError("Product doesn't seem to match expected value.\nExpected "
+                           ValueError("Product doesn't match expected value.\nExpected "
                            + format_polar(expected)
                            + ", got "
                            + format_polar(actual)))
@@ -378,9 +370,8 @@ def test_complex_exp_arbitrary(fun):
         log_message = f"Testing x={format_cartesian(x)}, y={format_cartesian(y)}"
         expected = complex_exp_arbitrary_ref(x, y)
         actual = fun(x, y)
-        assert_tuple(actual)
         assert_cartesian(expected, actual,
-                               ValueError("Result of exponentiation doesn't seem to match expected value.\nExpected "
+                               ValueError("Result of exponentiation doesn't match expected value.\nExpected "
                                + format_cartesian(expected)
                                + ", got "
                                + format_cartesian(actual)))
